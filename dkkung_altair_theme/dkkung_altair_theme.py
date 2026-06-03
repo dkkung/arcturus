@@ -105,6 +105,7 @@ colors = {
         "#234EA0",
         "#1C3185",
     ],
+    "mpl_YlGnBu_4": [],
     # --- cmocean colormaps (9-color samples at linspace(0,1,9)) ---
     "cmocean_algae": [
         "#D6F9CF",
@@ -1436,18 +1437,16 @@ def custom() -> alt.theme.ThemeConfig:
                 # pass in a list outside of a dict to AVOID interpolations; define as {scheme: _} to USE interpolation, which will NOT use the maximum range of colors
                 "category": colors["DKolors"],
                 "diverging": {
-                    "scheme": "redyellowblue",
+                    "scheme": colors["mpl_YlGnBu"],
                 },
                 "heatmap": {
-                    # "scheme": "viridis",
-                    "scheme": colors["ordinal"],
+                    "scheme": colors["mpl_GnBu"],
                 },
                 "ordinal": {
-                    "scheme": colors["ordinal"],
+                    "scheme": colors["mpl_YlGnBu"],
                 },
                 "ramp": {
-                    # "scheme": "viridis",
-                    "scheme": colors["ordinal"],
+                    "scheme": colors["mpl_GnBu"],
                 },
                 # "symbol": ["circle", "square", "diamond", "triangle-up", "triangle-down", "cross"],
                 # "strokeDash": [[1, 0], [4, 2], [2, 2], [4, 2, 1, 2], [1, 2]],
