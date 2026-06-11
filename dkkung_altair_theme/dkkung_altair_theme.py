@@ -12,8 +12,8 @@ register.
 
 def options(
     angledX=False,
-    axisWidth=0.25,
-    barPadding=0.1,
+    axisWidth=0.50,
+    bandPadding=0.1,
     darkmode=False,
     dashedLine=False,
     dashedRule=True,
@@ -50,7 +50,7 @@ def options(
     alt.theme.options = {}  # must reset options to remove stale keys
     alt.theme.options["angledX"] = angledX
     alt.theme.options["axisWidth"] = axisWidth
-    alt.theme.options["barPadding"] = barPadding
+    alt.theme.options["bandPadding"] = bandPadding
     alt.theme.options["chartBackgroundColor"] = chartBackgroundColor
     alt.theme.options["darkmode"] = darkmode
     alt.theme.options["dashedLine"] = dashedLine
@@ -1475,8 +1475,8 @@ def custom():
                 "strokeWidth": opts["axisWidth"],
             },
             "scale": {
-                "bandPaddingInner": opts["barPadding"],
-                "bandPaddingOuter": opts["barPadding"],
+                "bandPaddingInner": opts["bandPadding"],
+                "bandPaddingOuter": opts["bandPadding"],
             },
             "rect": {
                 "fill": opts["markFillColor"],
