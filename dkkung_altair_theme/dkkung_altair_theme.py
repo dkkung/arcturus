@@ -26,6 +26,7 @@ def options(
     grid=False,
     gridColor="darkGray",
     legend=True,
+    legendOffset=None,  # defaults to tickSize if not set
     legendStroke=False,
     markFillColor="black",
     markFillOpacity=0.9,
@@ -66,6 +67,7 @@ def options(
     alt.theme.options["grid"] = grid
     alt.theme.options["gridColor"] = gridColor
     alt.theme.options["legend"] = legend
+    alt.theme.options["legendOffset"] = legendOffset  # falls back to tickSize in custom()
     alt.theme.options["legendStroke"] = legendStroke
     alt.theme.options["markFillColor"] = markFillColor
     alt.theme.options["markFillOpacity"] = markFillOpacity
@@ -1412,6 +1414,9 @@ def custom():
             },
             "legend": {
                 "disable": not opts["legend"],
+                "offset": opts["legendOffset"]
+                if opts["legendOffset"] is not None
+                else opts["tickSize"],
                 "gradientOpacity": opts["markFillOpacity"],
                 "gradientStrokeColor": "white" if opts["darkmode"] else "black",
                 "gradientStrokeWidth": opts["markStrokeWidth"],
