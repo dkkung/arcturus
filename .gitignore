@@ -51,3 +51,4 @@ pipenv
 *.nd2
 
 # Project-specific #
+examples/

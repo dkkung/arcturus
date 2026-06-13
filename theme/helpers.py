@@ -77,7 +77,7 @@ def palette_range(
 
 def beeswarm_offsets(
     y_vals,
-    height_px: int = 200,
+    height_px: int | None = None,
     markSize: float = 10,
     step: float | None = None,
 ) -> np.ndarray:
@@ -131,6 +131,9 @@ def beeswarm_offsets(
             xOffset=alt.XOffset("beeswarm_x:Q"),
         )
     """
+    if height_px is None:
+        height_px = alt.theme.options.get("chartHeight", 300)
+
     y_vals = np.asarray(y_vals, dtype=float)
     n = len(y_vals)
     if n == 0:
@@ -176,7 +179,7 @@ def add_beeswarm_offsets(
     df: pl.DataFrame,
     y_col: str,
     group_by: list[str],
-    height_px: int = 200,
+    height_px: int | None = None,
     markSize: float = 10,
     step: float | None = None,
     out_col: str = "beeswarm_x",
@@ -321,7 +324,7 @@ def pvalue_layer(
     tick_height: float = 0.5,
     style: str = "line",
     categories: list | None = None,
-    chartWidth: int = 400,
+    chartWidth: int | None = None,
     strokeWidth: float | None = None,
     fontSize: int | None = None,
     reverse: bool = False,
@@ -456,6 +459,14 @@ def pvalue_layer(
             )
         y = float(df.filter(pl.col(x_col).is_in([group1, group2]))[y_col].max()) + y_pad
 
+    # --- resolve theme-linked defaults ---
+    if chartWidth is None:
+        chartWidth = alt.theme.options.get("chartWidth", 400)
+    if strokeWidth is None:
+        strokeWidth = alt.theme.options.get("axisWidth", 0.5)
+    if fontSize is None:
+        fontSize = alt.theme.options.get("fontSize", 7)
+
     # --- categories and text x position ---
     if categories is None:
         if df is None or x_col is None:
@@ -468,12 +479,6 @@ def pvalue_layer(
     g1_idx = categories.index(group1)
     g2_idx = categories.index(group2)
     x_mid_px = ((g1_idx + g2_idx + 1) / 2) * band_w
-
-    # --- resolve theme-linked defaults ---
-    if strokeWidth is None:
-        strokeWidth = alt.theme.options.get("axisWidth", 0.5)
-    if fontSize is None:
-        fontSize = alt.theme.options.get("fontSize", 7)
 
     _rule_kwargs = {"strokeWidth": strokeWidth, "strokeDash": [0, 0]}
 

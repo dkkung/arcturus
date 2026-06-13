@@ -16,6 +16,8 @@ def options(
     axisOffset=None,  # defaults to tickSize if not set
     axisWidth=0.50,
     bandPadding=0.1,
+    chartHeight=150,
+    chartWidth=150,
     darkmode=False,
     dashedLine=False,
     dashedRule=True,
@@ -57,6 +59,8 @@ def options(
     alt.theme.options["axisWidth"] = axisWidth
     alt.theme.options["bandPadding"] = bandPadding
     alt.theme.options["chartBackgroundColor"] = chartBackgroundColor
+    alt.theme.options["chartHeight"] = chartHeight
+    alt.theme.options["chartWidth"] = chartWidth
     alt.theme.options["darkmode"] = darkmode
     alt.theme.options["dashedLine"] = dashedLine
     alt.theme.options["dashedRule"] = dashedRule
@@ -340,6 +344,10 @@ def custom():
                 "subtitleFontWeight": opts["fontWeight"],
             },
             "view": {
+                "continuousWidth": opts["chartWidth"],
+                "continuousHeight": opts["chartHeight"],
+                "discreteWidth": opts["chartWidth"],
+                "discreteHeight": opts["chartHeight"],
                 "fill": (
                     None
                     if opts["transparentBackground"] or opts["darkmode"]
