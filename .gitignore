@@ -51,4 +51,5 @@ pipenv
 *.nd2
 
 # Project-specific #
-examples/
+*.png
+*.svg
