@@ -6,60 +6,27 @@ import theme
 
 rng = np.random.default_rng(42)
 
-VARIABLES = ["Gene A", "Gene B", "Gene C", "Gene D", "Gene E", "Gene F"]
-n = len(VARIABLES)
+xs, ys = [], []
+for cx, cy, s, n in [(2.5, 7.5, 0.6, 130), (7.5, 2.5, 0.7, 150), (5.0, 5.5, 1.0, 110)]:
+    xs.append(rng.normal(cx, s, n))
+    ys.append(rng.normal(cy, s, n))
 
-cov = rng.uniform(-0.6, 0.6, (n, n))
-cov = (cov + cov.T) / 2
-np.fill_diagonal(cov, 1.0)
-
-rows = []
-for i, v1 in enumerate(VARIABLES):
-    for j, v2 in enumerate(VARIABLES):
-        rows.append({"var1": v1, "var2": v2, "correlation": float(cov[i, j])})
-
-df = pl.DataFrame(rows)
+df = pl.DataFrame({
+    "x": np.concatenate(xs).tolist(),
+    "y": np.concatenate(ys).tolist(),
+})
 
 palette = theme.palette_range("lagoon_4_oklab")
 
-theme.options(chartWidth=150, chartHeight=150)
-
-axis_x = alt.Axis(
-    labelAngle=-45,
-    labelAlign="right",
-    domain=False,
-    ticks=False,
-    labelPadding=2,
-)
-axis_y = alt.Axis(
-    domain=False,
-    ticks=False,
-    labelPadding=2,
-)
+theme.options()
 
 chart = (
     alt.Chart(df)
     .mark_rect()
     .encode(
-        x=alt.X(
-            "var1:N",
-            sort=VARIABLES,
-            title=None,
-            axis=axis_x,
-            scale=alt.Scale(paddingInner=0, paddingOuter=0),
-        ),
-        y=alt.Y(
-            "var2:N",
-            sort=VARIABLES[::-1],
-            title=None,
-            axis=axis_y,
-            scale=alt.Scale(paddingInner=0, paddingOuter=0),
-        ),
-        color=alt.Color(
-            "correlation:Q",
-            scale=alt.Scale(range=palette, domain=[-1, 1]),
-            title=None,
-        ),
+        x=alt.X("x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+        y=alt.Y("y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+        color=alt.Color("count()", scale=alt.Scale(range=palette), title=None),
     )
 )
 

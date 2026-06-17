@@ -147,7 +147,7 @@ def mark_violin(
             color=alt.Color(
                 "__group:N",
                 sort=categories,
-                title=x_col if legend else None,
+                title=None,
                 legend=alt.Legend() if legend else None,
                 **(
                     {"scale": alt.Scale(range=palette if isinstance(palette, list) else [palette])}

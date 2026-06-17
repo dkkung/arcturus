@@ -30,10 +30,10 @@ df = pl.DataFrame(
     }
 )
 
-theme.options()
-palette = theme.palette_range("lagoon_4_oklab", n=len(CATEGORIES))
+theme.options(angledX=True)
+palette = theme.palette_range("lavenders", n=len(CATEGORIES))
 
-chart = theme.mark_violin(df, "group", "value", CATEGORIES, labelAngle=-45, palette=palette)
+chart = theme.mark_violin(df, "group", "value", CATEGORIES, palette=palette)
 
 theme.save(chart, "violin")
 print("saved violin")

@@ -16,7 +16,6 @@ import polars as pl
 
 from theme.layers import mark_violin
 from theme.palettes import colors
-from theme.transforms import add_beeswarm_offsets
 
 W = 100  # base chart width / height (px)
 
@@ -128,12 +127,16 @@ _sy = np.exp(_sx) + _scatter_rng.normal(0, 2, 200)
 _smask = _sy >= 0
 _scatter_df = pl.DataFrame({"x": _sx[_smask].tolist(), "y": _sy[_smask].tolist()})
 
-# Heatmap: denser grid (500 pts) for fuller bin coverage
+# Heatmap: 3 Gaussian clusters filling the [0, 10]×[0, 10] space
 _heat_rng = np.random.default_rng(42)
-_hx = np.linspace(0, 5, 500)
-_hy = np.exp(_hx) + _heat_rng.normal(0, 2, 500)
-_hmask = _hy >= 0
-_heat_df = pl.DataFrame({"x": _hx[_hmask].tolist(), "y": _hy[_hmask].tolist()})
+_heat_xs, _heat_ys = [], []
+for _cx, _cy, _s, _n in [(2.5, 7.5, 0.6, 130), (7.5, 2.5, 0.7, 150), (5.0, 5.5, 1.0, 110)]:
+    _heat_xs.append(_heat_rng.normal(_cx, _s, _n))
+    _heat_ys.append(_heat_rng.normal(_cy, _s, _n))
+_heat_df = pl.DataFrame({
+    "x": np.concatenate(_heat_xs).tolist(),
+    "y": np.concatenate(_heat_ys).tolist(),
+})
 
 # Area chart: exact data from area_chart.py
 _AREA_GROUPS = ["Group A", "Group B", "Group C", "Group D"]
@@ -170,9 +173,7 @@ _box_raw = pl.DataFrame(
         ),
     }
 )
-_box_df = add_beeswarm_offsets(
-    _box_raw, y_col="value", group_by=["group"], step=10, height_px=W, markSize=5
-)
+_box_df = _box_raw
 
 # Line chart: 4 groups with slopes over 50 timepoints
 _LINE_GROUPS = ["Group A", "Group B", "Group C", "Group D"]
@@ -189,30 +190,6 @@ for _grp in _LINE_GROUPS:
             }
         )
 _line_df = pl.DataFrame(_line_rows)
-
-# Strip chart: 5 groups, 50 pts each
-_STRIP_CATS = ["Group A", "Group B", "Group C", "Group D", "Group E"]
-_strip_rng = np.random.default_rng(42)
-_strip_df = pl.DataFrame(
-    {
-        "group": (
-            ["Group A"] * 50
-            + ["Group B"] * 50
-            + ["Group C"] * 50
-            + ["Group D"] * 50
-            + ["Group E"] * 50
-        ),
-        "value": np.concatenate(
-            [
-                _strip_rng.normal(10, 2, 50),
-                _strip_rng.normal(14, 2, 50),
-                _strip_rng.normal(11, 2, 50),
-                _strip_rng.normal(13, 2, 50),
-                _strip_rng.normal(9, 2, 50),
-            ]
-        ).tolist(),
-    }
-)
 
 # Stacked bar: 5 groups, 2 types
 _SBAR_GROUPS = ["Group A", "Group B", "Group C", "Group D", "Group E"]
@@ -272,8 +249,7 @@ _VIR_MAD = _mad_pct(_VIR_STEPS)
 
 # ── Layout constants ────────────────────────────────────────────────────────
 
-_N_ROW_CHARTS = 11  # colorspace, de_sparkline, area, scatter, line, boxplot,
-# strip, violin, stacked_bar, histogram, heatmap
+_N_ROW_CHARTS = 10  # colorspace, de_sparkline, area, scatter, line, boxplot, violin, stacked_bar, histogram, heatmap
 _ROW_SPACING = 6
 _SWATCH_W = _N_ROW_CHARTS * W + (_N_ROW_CHARTS - 1) * _ROW_SPACING  # 1160px
 
@@ -305,7 +281,7 @@ def _scatter(key):
         .encode(
             x=alt.X("x:Q", title=None),
             y=alt.Y("y:Q", title=None),
-            color=alt.Color("y:Q", title=None, scale=alt.Scale(range=p), legend=None),
+            color=alt.Color("y:Q", title=None, scale=alt.Scale(range=p)),
         )
     )
 
@@ -324,16 +300,10 @@ def _boxplot(key):
     color_enc = alt.Color(
         "group:N",
         sort=_BOX_CATS,
-        legend=None,
+        title=None,
         scale=alt.Scale(domain=_BOX_CATS, range=box_colors),
     )
-    boxes = alt.Chart(_box_df).mark_boxplot().encode(x=x_enc, y=y_enc, color=color_enc)
-    pts = (
-        alt.Chart(_box_df)
-        .mark_circle(clip=True)
-        .encode(x=x_enc, xOffset=alt.XOffset("beeswarm_x:Q"), y=y_enc)
-    )
-    return (pts + boxes).resolve_scale(color="independent")
+    return alt.Chart(_box_df).mark_boxplot().encode(x=x_enc, y=y_enc, color=color_enc)
 
 
 def _heatmap(key):
@@ -342,9 +312,9 @@ def _heatmap(key):
         alt.Chart(_heat_df)
         .mark_rect()
         .encode(
-            x=alt.X("x:Q", bin=alt.Bin(maxbins=12), title=None),
-            y=alt.Y("y:Q", bin=alt.Bin(maxbins=12), title=None),
-            color=alt.Color("count()", scale=alt.Scale(range=p), legend=None),
+            x=alt.X("x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+            y=alt.Y("y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+            color=alt.Color("count()", title=None, scale=alt.Scale(range=p)),
             tooltip=alt.Tooltip("count()", title="count"),
         )
     )
@@ -361,7 +331,7 @@ def _area(key):
             x=alt.X("time:Q", title=None),
             y=alt.Y("value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])),
             color=alt.Color(
-                "group:N", sort=_AREA_GROUPS, scale=alt.Scale(range=palette), legend=None
+                "group:N", sort=_AREA_GROUPS, title=None, scale=alt.Scale(range=palette)
             ),
             order=alt.Order("group:N", sort="descending"),
         )
@@ -379,35 +349,7 @@ def _line(key):
             x=alt.X("time:Q", title=None),
             y=alt.Y("value:Q", title=None),
             color=alt.Color(
-                "group:N", sort=_LINE_GROUPS, scale=alt.Scale(range=palette), legend=None
-            ),
-        )
-    )
-
-
-_strip_df_b = add_beeswarm_offsets(
-    _strip_df, y_col="value", group_by=["group"], step=5, height_px=W, markSize=8
-)
-
-
-def _strip(key):
-    p = colors[key]
-    n = len(p)
-    palette = [p[round(i * (n - 1) / (len(_STRIP_CATS) - 1))] for i in range(len(_STRIP_CATS))]
-    return (
-        alt.Chart(_strip_df_b)
-        .mark_circle(clip=True)
-        .encode(
-            x=alt.X(
-                "group:N",
-                sort=_STRIP_CATS,
-                title=None,
-                axis=alt.Axis(labelAngle=-45, labelAlign="right"),
-            ),
-            xOffset=alt.XOffset("beeswarm_x:Q"),
-            y=alt.Y("value:Q", title=None),
-            color=alt.Color(
-                "group:N", sort=_STRIP_CATS, scale=alt.Scale(range=palette), legend=None
+                "group:N", sort=_LINE_GROUPS, title=None, scale=alt.Scale(range=palette)
             ),
         )
     )
@@ -418,7 +360,7 @@ def _violin(key):
     n = len(p)
     palette = [p[round(i * (n - 1) / (len(_VIOLIN_CATS) - 1))] for i in range(len(_VIOLIN_CATS))]
     return mark_violin(
-        _violin_df, "group", "value", _VIOLIN_CATS, palette=palette, legend=False, labelAngle=-45
+        _violin_df, "group", "value", _VIOLIN_CATS, palette=palette, legend=True, angledX=True
     )
 
 
@@ -438,7 +380,7 @@ def _stacked_bar(key):
             ),
             y=alt.Y("value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])),
             color=alt.Color(
-                "type:N", sort=_SBAR_TYPES, scale=alt.Scale(range=palette), legend=None
+                "type:N", sort=_SBAR_TYPES, title=None, scale=alt.Scale(range=palette)
             ),
         )
     )
@@ -452,10 +394,10 @@ def _histogram(key):
         alt.Chart(_hist_df)
         .mark_bar(binSpacing=0)
         .encode(
-            x=alt.X("value:Q", title=None, bin=alt.Bin(maxbins=20)),
+            x=alt.X("value:Q", title=None, bin=alt.Bin(maxbins=10), axis=alt.Axis(format=".0f")),
             y=alt.Y("count()", title=None),
             color=alt.Color(
-                "group:N", sort=_HIST_GROUPS, scale=alt.Scale(range=palette), legend=None
+                "group:N", sort=_HIST_GROUPS, title=None, scale=alt.Scale(range=palette)
             ),
         )
     )
@@ -481,7 +423,9 @@ def _de_sparkline(key):
         scale=alt.Scale(domain=[-0.5, max_step + 0.5]),
         axis=alt.Axis(tickMinStep=1),
     )
-    y_enc = alt.Y("dE:Q", title="Oklab ΔE", scale=alt.Scale(domain=[lo, hi]))
+    y_enc = alt.Y(
+        "dE:Q", title="Oklab ΔE", scale=alt.Scale(domain=[lo, hi]), axis=alt.Axis(format=".3f")
+    )
 
     vir_line = (
         alt.Chart(vir_df)
@@ -501,7 +445,12 @@ def _de_sparkline(key):
             tooltip=[alt.Tooltip("step:Q"), alt.Tooltip("dE:Q", format=".4f", title="ΔE")],
         )
     )
-    return (vir_line + pal_line).properties(title=f"MAD {mad}%")
+    mad_label = (
+        alt.Chart(pl.DataFrame({"text": [f"MAD {mad}%"]}))
+        .mark_text(align="left", baseline="top", dx=4, dy=4)
+        .encode(x=alt.value(0), y=alt.value(0), text="text:N")
+    )
+    return vir_line + pal_line + mad_label
 
 
 def _colorspace(key):
@@ -525,10 +474,18 @@ def _colorspace(key):
     line = alt.Chart(df).mark_line(color="black").encode(x="a:Q", y="b:Q", order="i:O")
     pts = (
         alt.Chart(df)
-        .mark_circle(size=70)
+        .mark_circle(size=20)
         .encode(
-            x=alt.X("a:Q", scale=alt.Scale(padding=12), axis=alt.Axis(title="a")),
-            y=alt.Y("b:Q", scale=alt.Scale(padding=12), axis=alt.Axis(title="b")),
+            x=alt.X(
+                "a:Q",
+                scale=alt.Scale(domain=[-0.3, 0.3]),
+                axis=alt.Axis(title="Oklab a", format=".2f"),
+            ),
+            y=alt.Y(
+                "b:Q",
+                scale=alt.Scale(domain=[-0.3, 0.3]),
+                axis=alt.Axis(title="Oklab b", format=".2f"),
+            ),
             color=alt.Color("hex:N", scale=alt.Scale(domain=domain, range=domain), legend=None),
             tooltip=[
                 alt.Tooltip("label:N", title="stop"),
@@ -538,7 +495,7 @@ def _colorspace(key):
             ],
         )
     )
-    return (line + pts).properties(title="Oklab a/b").resolve_scale(color="independent")
+    return (line + pts).resolve_scale(color="independent")
 
 
 # ── Row: all charts for one palette key (landscape layout) ─────────────────
@@ -548,28 +505,23 @@ _SWATCH_H = 14
 
 
 def _row(key, label):
-    # Swatch sits above the colorspace as a vconcat; all other charts sit
-    # at the same level via hconcat — no spacers needed since charts without
-    # angled x-labels and charts with them will be aligned by Vega-Lite's
-    # hconcat top-alignment.
-    first = alt.vconcat(
-        _swatch(key, label),
+    row = alt.hconcat(
         _colorspace(key),
-        spacing=2,
-    ).resolve_scale(color="independent")
-    return alt.hconcat(
-        first,
         _de_sparkline(key),
         _area(key),
-        _scatter(key),
-        _line(key),
-        _boxplot(key),
-        _strip(key),
-        _violin(key),
         _stacked_bar(key),
         _histogram(key),
         _heatmap(key),
+        _boxplot(key),
+        _violin(key),
+        _scatter(key),
+        _line(key),
         spacing=6,
+    ).resolve_scale(color="independent", opacity="independent")
+    return alt.vconcat(
+        _swatch(key, label),
+        row,
+        spacing=2,
     ).resolve_scale(color="independent", opacity="independent")
 
 
