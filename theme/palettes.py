@@ -1393,7 +1393,7 @@ colors = {
     ],
     # --- discrete qualitative — nucleotide chemical identity ---
     # 5 colors: A, T, G, C, U — chromatogram convention (A=green, T=red, G=gold, C=blue)
-    # U (uracil) violet to distinguish from T when working with RNA sequences.
+    # U (uracil) violet to distinguish from T.
     "nucleotides": [
         "#4D945E",  # A — green (greens[6])
         "#BC4A5A",  # T — red (reds[7])
@@ -1409,13 +1409,13 @@ colors = {
     # proteins2: electrostatics convention — blue=positive, red=negative; earthen hydrophobic
     "proteins": [
         "#000000",  # hydrophobic — near-black (greys[11]); was #1F1F1F
-        "#FCD62C",  # aromatic — bright yellow (yellows[5])
-        "#BC4A5A",  # positive — vivid red (reds[7])
-        "#4177B1",  # negative — steel blue (blues[7])
-        "#4D945E",  # polar — forest green (greens[6])
+        "#FCD62C",  # aromatic — yellow (yellows[5])
+        "#BC4A5A",  # positive — red (reds[7])
+        "#4177B1",  # negative — blue (blues[7])
+        "#4D945E",  # polar — green (greens[6])
         "#AD4CAB",  # proline — magenta (magentas[6])
-        "#898989",  # glycine — medium grey (greys[5])
-        "#E97D1C",  # cysteine — vivid orange (oranges[7])
+        "#898989",  # glycine — grey (greys[5])
+        "#E97D1C",  # cysteine — orange (oranges[7])
     ],
     # --- cmocean colormaps (9-color samples at linspace(0,1,9)) ---
     "cmocean_algae": [
