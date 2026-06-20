@@ -40,9 +40,9 @@ df = theme.add_beeswarm_offsets(
     step=10,
 )
 
-# palette = theme.palette_range("greys", n=1, start=2)
-# palette = theme.palette_range("mpl_viridis", n=len(CATEGORIES), start=4)
-palette = theme.palette_range("lavenders", n=6, start=0)
+# palette = theme.palette("greys", n=1, start=2)
+# palette = theme.palette("mpl_viridis", n=len(CATEGORIES), start=4)
+palette = theme.palette("lavenders", n=6, start=0)
 
 base = alt.Chart(df).encode(
     x=alt.X(

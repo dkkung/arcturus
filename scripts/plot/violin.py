@@ -31,7 +31,7 @@ df = pl.DataFrame(
 )
 
 theme.options(angledX=True)
-palette = theme.palette_range("lavenders", n=len(CATEGORIES))
+palette = theme.palette("lavenders", n=len(CATEGORIES))
 
 chart = theme.mark_violin(df, "group", "value", CATEGORIES, palette=palette)
 

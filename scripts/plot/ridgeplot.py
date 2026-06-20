@@ -48,7 +48,7 @@ for i, group in enumerate(GROUPS):
 density_df = pl.DataFrame(density_rows)
 label_df = pl.DataFrame(label_rows)
 
-palette = theme.palette_range("mpl_YlGnBu", n=len(GROUPS), start=1)
+palette = theme.palette("mpl_YlGnBu", n=len(GROUPS), start=1)
 
 theme.options(chartWidth=200, legend=LEGEND)
 

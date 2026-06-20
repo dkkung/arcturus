@@ -24,7 +24,7 @@ for cls in CLASSES:
 
 df = pl.DataFrame(rows)
 
-palette = theme.palette_range("mpl_YlGnBu", n=len(CLASSES), start=2)
+palette = theme.palette("mpl_YlGnBu", n=len(CLASSES), start=2)
 
 theme.options(chartWidth=200, chartHeight=200)
 

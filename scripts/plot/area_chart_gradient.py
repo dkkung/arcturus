@@ -25,7 +25,7 @@ for t in TIMEPOINTS:
 
 df = pl.DataFrame(rows)
 
-palette = theme.palette_range("mpl_YlGnBu", n=10)
+palette = theme.palette("mpl_YlGnBu", n=10)
 
 theme.options(closed=False)
 

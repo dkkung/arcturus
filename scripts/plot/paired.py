@@ -24,7 +24,7 @@ for group in GROUPS:
 
 df = pl.DataFrame(rows)
 
-palette = theme.palette_range("mpl_YlGnBu", n=len(GROUPS), start=2)
+palette = theme.palette("mpl_YlGnBu", n=len(GROUPS), start=2)
 
 theme.options()
 

@@ -17,7 +17,7 @@ df = pl.DataFrame(
     }
 )
 
-palette = theme.palette_range("greys", n=2)
+palette = theme.palette("greys", n=2)
 
 theme.options()
 

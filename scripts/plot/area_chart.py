@@ -22,7 +22,7 @@ for t in TIMEPOINTS:
 
 df = pl.DataFrame(rows)
 
-palette = theme.palette_range("bluelagoon", n=len(GROUPS))
+palette = theme.palette("bluelagoon", n=len(GROUPS))
 
 theme.options()
 
