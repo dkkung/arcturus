@@ -59,7 +59,7 @@ def _mad_pct(steps):
 
 GROUPS = [
     (
-        "Sequential — Single-hue analogs",
+        "Sequential — Single-hue",
         [
             "blues",
             "greens",
@@ -78,27 +78,39 @@ GROUPS = [
         ],
     ),
     (
+        "Sequential — Single-hue 2",
+        [
+            "blues2",
+            "greens2",
+            "purples2",
+            "lavenders2",
+            "violets2",
+            "greys2",
+            "reds2",
+            "roses2",
+            "oranges2",
+            "browns2",
+            "yellows2",
+            "cyans2",
+            "magentas2",
+            "neongreens2",
+        ],
+    ),
+    (
         "Sequential — Multi-hue",
         [
+            "yellowgreen",
             "ember",
             "dusk",
+            "shoal",
             "moss",
             "GnBu",
             "YlGnBu",
             "candy",
             "lagoon",
             "bluestlagoon",
-            "bluestlagoon2",
-            "bluestlagoon3",
-            "bluestlagoon4",
             "bluerlagoon",
-            "bluerlagoon2",
-            "bluerlagoon3",
-            "bluerlagoon4",
             "bluelagoon",
-            "bluelagoon2",
-            "bluelagoon3",
-            "bluelagoon4",
         ],
     ),
     (
@@ -112,14 +124,6 @@ GROUPS = [
             "GdBu",
             "BrTe",
             "BrGn",
-        ],
-    ),
-    (
-        "Discrete",
-        [
-            "nucleotide",
-            "proteins",
-            "proteins2",
         ],
     ),
     (
@@ -178,6 +182,13 @@ GROUPS = [
             "greysrose",
         ],
     ),
+    (
+        "Discrete",
+        [
+            "nucleotide",
+            "proteins",
+        ],
+    ),
 ]
 # Keys that are already final variants (no base+suffix convention)
 LITERAL_KEYS = []
@@ -193,18 +204,26 @@ _sy = np.exp(_sx) + _scatter_rng.normal(0, 2, 200)
 _smask = _sy >= 0
 _scatter_df = pl.DataFrame({"x": _sx[_smask].tolist(), "y": _sy[_smask].tolist()})
 
-# Heatmap: 3 Gaussian clusters filling the [0, 10]×[0, 10] space
-_heat_rng = np.random.default_rng(42)
-_heat_xs, _heat_ys = [], []
-for _cx, _cy, _s, _n in [(2.5, 7.5, 0.6, 130), (7.5, 2.5, 0.7, 150), (5.0, 5.5, 1.0, 110)]:
-    _heat_xs.append(_heat_rng.normal(_cx, _s, _n))
-    _heat_ys.append(_heat_rng.normal(_cy, _s, _n))
-_heat_df = pl.DataFrame(
-    {
-        "x": np.concatenate(_heat_xs).tolist(),
-        "y": np.concatenate(_heat_ys).tolist(),
-    }
-)
+# Sequential heatmap: radial Gaussian peak at center, values in [0, 1]
+_seq_heat_rows = []
+for _xi in range(30):
+    for _yi in range(30):
+        _x = _xi / 29.0 * 10
+        _y = _yi / 29.0 * 10
+        _z = np.exp(-0.5 * ((_x - 5.0) ** 2 / 4.0 + (_y - 5.0) ** 2 / 4.0))
+        _seq_heat_rows.append({"x": float(_x), "y": float(_y), "z": float(_z)})
+_seq_heat_df = pl.DataFrame(_seq_heat_rows)
+
+# Diverging heatmap: two opposing Gaussian bumps, values in [-1, 1]
+_heat_rows = []
+for _xi in range(30):
+    for _yi in range(30):
+        _x = _xi / 29.0 * 10
+        _y = _yi / 29.0 * 10
+        _pos = np.exp(-0.5 * ((_x - 2.5) ** 2 / 2.25 + (_y - 7.5) ** 2 / 2.25))
+        _neg = np.exp(-0.5 * ((_x - 7.5) ** 2 / 2.25 + (_y - 2.5) ** 2 / 2.25))
+        _heat_rows.append({"x": float(_x), "y": float(_y), "z": float(_pos - _neg)})
+_heat_df = pl.DataFrame(_heat_rows)
 
 # Area chart: exact data from area_chart.py
 _AREA_GROUPS = ["Group A", "Group B", "Group C", "Group D"]
@@ -317,7 +336,7 @@ _VIR_MAD = _mad_pct(_VIR_STEPS)
 
 # ── Layout constants ────────────────────────────────────────────────────────
 
-_N_ROW_CHARTS = 10  # colorspace, de_sparkline, area, scatter, line, boxplot, violin, stacked_bar, histogram, heatmap
+_N_ROW_CHARTS = 11  # colorspace, de_sparkline, area, scatter, line, boxplot, violin, stacked_bar, histogram, seq_heatmap, div_heatmap
 _ROW_SPACING = 6
 _SWATCH_W = _N_ROW_CHARTS * W + (_N_ROW_CHARTS - 1) * _ROW_SPACING  # 1160px
 
@@ -374,6 +393,20 @@ def _boxplot(key):
     return alt.Chart(_box_df).mark_boxplot().encode(x=x_enc, y=y_enc, color=color_enc)
 
 
+def _seq_heatmap(key):
+    p = colors[key]
+    return (
+        alt.Chart(_seq_heat_df)
+        .mark_rect()
+        .encode(
+            x=alt.X("x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+            y=alt.Y("y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+            color=alt.Color("mean(z):Q", title=None, scale=alt.Scale(range=p)),
+            tooltip=alt.Tooltip("mean(z):Q", title="value", format=".2f"),
+        )
+    )
+
+
 def _heatmap(key):
     p = colors[key]
     return (
@@ -382,8 +415,12 @@ def _heatmap(key):
         .encode(
             x=alt.X("x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
             y=alt.Y("y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
-            color=alt.Color("count()", title=None, scale=alt.Scale(range=p)),
-            tooltip=alt.Tooltip("count()", title="count"),
+            color=alt.Color(
+                "mean(z):Q",
+                title=None,
+                scale=alt.Scale(range=p, domainMid=0),
+            ),
+            tooltip=alt.Tooltip("mean(z):Q", title="value", format=".2f"),
         )
     )
 
@@ -577,6 +614,7 @@ def _row(key, label):
         _area(key),
         _stacked_bar(key),
         _histogram(key),
+        _seq_heatmap(key),
         _heatmap(key),
         _boxplot(key),
         _violin(key),

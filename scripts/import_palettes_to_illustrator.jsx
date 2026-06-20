@@ -1,5 +1,17 @@
-colors = {
-    # --- custom palettes ---
+// Adobe Illustrator script to import palettes as named swatch groups.
+// Run via File > Scripts > Other Script...
+var doc = app.documents.length > 0 ? app.activeDocument : app.documents.add();
+
+function hexToRGB(hex) {
+    hex = hex.replace('#', '');
+    return [
+        parseInt(hex.substring(0, 2), 16),
+        parseInt(hex.substring(2, 4), 16),
+        parseInt(hex.substring(4, 6), 16),
+    ];
+}
+
+var palettes = {
     "adobe_greys": [
         "#221F20",
         "#414042",
@@ -11,30 +23,8 @@ colors = {
         "#BCBEC0",
         "#D2D3D4",
         "#E7E7E8",
-        "#F1F2F2",
+        "#F1F2F2"
     ],
-    # ── Palette build methodology ─────────────────────────────────────────────────
-    # All custom palettes below are built in Oklab (Ottosson 2020) for true
-    # perceptual uniformity.  CIELAB variants (previously stored alongside as
-    # *_cielab) were dropped because Oklab has strictly lower hue non-linearity,
-    # especially in the blue region.
-    #
-    # Sequential recipe (_cielab, now removed):
-    #   1. Start from mpl base palette (e.g. mpl_Blues) in CIELAB.
-    #   2. At each of N base stops, set C* = 0.65 × max_gamut_chroma(L*, hue).
-    #   3. Densify the piecewise-linear path; resample 12 stops at equal CIELAB arc-length.
-    #   Result: MAD(Oklab ΔE) ≈ 5–25% (cross-space metric mismatch).
-    #
-    # Sequential recipe (Oklab, current):
-    #   1. Fix hue in Oklab; sweep L from light → dark with C = 0.65 × Cmax(L, h).
-    #   2. Densify dense path; resample 12 stops at equal Oklab arc-length.
-    #   Result: MAD(Oklab ΔE) ≈ 0.05–2% — true perceptual uniformity.
-    #
-    # Diverging recipe (Oklab, current):
-    #   C(L) = FRAC × min_gamut_both_arms(L) × (1 − t); FRAC=0.85 for base,
-    #   FRAC=1.0 for *_sat variants.  13 stops (odd) so the white pivot at stop 6
-    #   lands exactly on the V-corner, avoiding the mid-palette dip that an even
-    #   count introduces.
     "ember": [
         "#F6E4B9",
         "#F1CEA1",
@@ -47,7 +37,7 @@ colors = {
         "#AD4573",
         "#943C73",
         "#7C326D",
-        "#652964",
+        "#652964"
     ],
     "dusk": [
         "#F4DDB4",
@@ -61,7 +51,7 @@ colors = {
         "#9C469C",
         "#813E9B",
         "#663693",
-        "#4B2F87",
+        "#4B2F87"
     ],
     "rose": [
         "#F6DDDC",
@@ -75,7 +65,7 @@ colors = {
         "#AD4576",
         "#983C69",
         "#83335C",
-        "#6F2A4E",
+        "#6F2A4E"
     ],
     "browns": [
         "#F7E6CD",
@@ -89,7 +79,7 @@ colors = {
         "#A0603D",
         "#8F5335",
         "#7D462D",
-        "#6D3925",
+        "#6D3925"
     ],
     "moss": [
         "#F3D9B8",
@@ -103,7 +93,7 @@ colors = {
         "#325C2B",
         "#244A28",
         "#1A3924",
-        "#11281C",
+        "#11281C"
     ],
     "shoal": [
         "#93F2C9",
@@ -117,7 +107,7 @@ colors = {
         "#39637E",
         "#2F536F",
         "#254360",
-        "#1B3452",
+        "#1B3452"
     ],
     "blues2": [
         "#BFE6F3",
@@ -131,7 +121,7 @@ colors = {
         "#2B3A9F",
         "#292C7C",
         "#231E5B",
-        "#19123D",
+        "#19123D"
     ],
     "violets": [
         "#E2D9F4",
@@ -145,7 +135,7 @@ colors = {
         "#763890",
         "#612D78",
         "#4D2361",
-        "#3B194A",
+        "#3B194A"
     ],
     "reds2": [
         "#F6D5D5",
@@ -159,7 +149,7 @@ colors = {
         "#7E2A34",
         "#631F27",
         "#4A151B",
-        "#320C10",
+        "#320C10"
     ],
     "oranges2": [
         "#FDD5BA",
@@ -173,7 +163,7 @@ colors = {
         "#733A08",
         "#5A2D05",
         "#431F03",
-        "#2C1301",
+        "#2C1301"
     ],
     "yellows2": [
         "#F9ECB8",
@@ -187,7 +177,7 @@ colors = {
         "#594E24",
         "#443C1A",
         "#312B11",
-        "#1F1A08",
+        "#1F1A08"
     ],
     "greens2": [
         "#E0FAE0",
@@ -201,7 +191,7 @@ colors = {
         "#305F32",
         "#234925",
         "#173419",
-        "#0C200D",
+        "#0C200D"
     ],
     "purples2": [
         "#E3D8F4",
@@ -215,7 +205,7 @@ colors = {
         "#5A3187",
         "#47256B",
         "#341950",
-        "#220F36",
+        "#220F36"
     ],
     "lavenders2": [
         "#DCDBF5",
@@ -229,7 +219,7 @@ colors = {
         "#4A309A",
         "#39257B",
         "#2A195D",
-        "#1B0F40",
+        "#1B0F40"
     ],
     "violets2": [
         "#E9D6F3",
@@ -243,7 +233,7 @@ colors = {
         "#63317A",
         "#4D2560",
         "#391947",
-        "#260F30",
+        "#260F30"
     ],
     "greys2": [
         "#DEDEDE",
@@ -257,7 +247,7 @@ colors = {
         "#494949",
         "#393939",
         "#292929",
-        "#1B1B1B",
+        "#1B1B1B"
     ],
     "roses2": [
         "#F4D4DE",
@@ -271,7 +261,7 @@ colors = {
         "#782C4C",
         "#5E213B",
         "#46162A",
-        "#2F0C1B",
+        "#2F0C1B"
     ],
     "browns2": [
         "#FBD4C8",
@@ -285,7 +275,7 @@ colors = {
         "#7E2E13",
         "#64230D",
         "#4A1807",
-        "#320D03",
+        "#320D03"
     ],
     "cyans2": [
         "#74F6F7",
@@ -299,7 +289,7 @@ colors = {
         "#225252",
         "#194040",
         "#102F2F",
-        "#081F1F",
+        "#081F1F"
     ],
     "magentas2": [
         "#EFD4ED",
@@ -313,7 +303,7 @@ colors = {
         "#663665",
         "#50294F",
         "#3B1D3A",
-        "#271126",
+        "#271126"
     ],
     "neongreens2": [
         "#7FFE9F",
@@ -327,7 +317,7 @@ colors = {
         "#0B5B29",
         "#07471F",
         "#043415",
-        "#02220B",
+        "#02220B"
     ],
     "blues": [
         "#DFE9F7",
@@ -341,7 +331,7 @@ colors = {
         "#386898",
         "#2F597F",
         "#264A69",
-        "#1D3A58",
+        "#1D3A58"
     ],
     "greens": [
         "#CFF8CF",
@@ -355,7 +345,7 @@ colors = {
         "#3B733E",
         "#306033",
         "#264D28",
-        "#1B3B1D",
+        "#1B3B1D"
     ],
     "purples": [
         "#F1E3F7",
@@ -369,7 +359,7 @@ colors = {
         "#7644B5",
         "#63399C",
         "#502E84",
-        "#3E246D",
+        "#3E246D"
     ],
     "greys": [
         "#F1F1F1",
@@ -383,7 +373,7 @@ colors = {
         "#515151",
         "#404040",
         "#2F2F2F",
-        "#1F1F1F",
+        "#1F1F1F"
     ],
     "reds": [
         "#F7E4DC",
@@ -397,7 +387,7 @@ colors = {
         "#A33F50",
         "#8B3545",
         "#742B3A",
-        "#5E212F",
+        "#5E212F"
     ],
     "oranges": [
         "#FFF3EB",
@@ -411,7 +401,7 @@ colors = {
         "#D67219",
         "#C26716",
         "#B05D12",
-        "#9D520F",
+        "#9D520F"
     ],
     "yellows": [
         "#FFF6D3",
@@ -425,7 +415,7 @@ colors = {
         "#DAB924",
         "#CFAF22",
         "#C4A61F",
-        "#B99C1D",
+        "#B99C1D"
     ],
     "cyans": [
         "#A1F6F5",
@@ -439,7 +429,7 @@ colors = {
         "#376868",
         "#2D5858",
         "#244848",
-        "#1B3938",
+        "#1B3938"
     ],
     "magentas": [
         "#F6DBF4",
@@ -453,7 +443,7 @@ colors = {
         "#793378",
         "#612760",
         "#4A1C49",
-        "#341233",
+        "#341233"
     ],
     "neongreens": [
         "#DFFFE8",
@@ -467,7 +457,7 @@ colors = {
         "#178C52",
         "#127745",
         "#0D6338",
-        "#08502C",
+        "#08502C"
     ],
     "yellowgreen": [
         "#F2EE83",
@@ -481,7 +471,7 @@ colors = {
         "#396E4D",
         "#2E5C42",
         "#244B36",
-        "#1B3A2A",
+        "#1B3A2A"
     ],
     "GnBu": [
         "#DDF583",
@@ -495,7 +485,7 @@ colors = {
         "#3B6D9A",
         "#305B84",
         "#264A6D",
-        "#1C3957",
+        "#1C3957"
     ],
     "YlGnBu": [
         "#F6E9A2",
@@ -509,7 +499,7 @@ colors = {
         "#396A8D",
         "#2E5679",
         "#224365",
-        "#173152",
+        "#173152"
     ],
     "candy": [
         "#F8E4E4",
@@ -523,13 +513,8 @@ colors = {
         "#8C3F91",
         "#703688",
         "#552D7D",
-        "#3A2570",
+        "#3A2570"
     ],
-    # ── Showcase multi-hue sequential (Oklab, 65% gamut chroma, equal arc length) ─
-    # Curated keyframe paths through Oklab designed to be perceptually uniform AND
-    # aesthetically distinct from the mpl viridis/magma/plasma/inferno family.
-    # bluerlagoons: intermediate saturation (chroma scaled to 87.5% of bluestlagoon*).
-    # bluelagoons: desaturated companions (chroma scaled to 75% of bluestlagoon*).
     "lagoon": [
         "#081726",
         "#132936",
@@ -542,7 +527,7 @@ colors = {
         "#6AC3A4",
         "#78DCB0",
         "#89F3BA",
-        "#C1F7D2",
+        "#C1F7D2"
     ],
     "bluestlagoon": [
         "#11369E",
@@ -556,7 +541,7 @@ colors = {
         "#68BDB9",
         "#72D0BF",
         "#7DE2C2",
-        "#9BF2B7",
+        "#9BF2B7"
     ],
     "bluerlagoon": [
         "#183A93",
@@ -570,7 +555,7 @@ colors = {
         "#73BBB7",
         "#7ECEBF",
         "#8ADFC3",
-        "#A5EFBC",
+        "#A5EFBC"
     ],
     "bluelagoon": [
         "#1F3D88",
@@ -584,7 +569,7 @@ colors = {
         "#7DB9B6",
         "#89CBBE",
         "#95DDC4",
-        "#ADEDC0",
+        "#ADEDC0"
     ],
     "redsblues": [
         "#BC4A5A",
@@ -599,7 +584,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "RdBu": [
         "#7F3745",
@@ -614,7 +599,7 @@ colors = {
         "#80A5CA",
         "#578BBD",
         "#3770A3",
-        "#1A5586",
+        "#1A5586"
     ],
     "PuGn": [
         "#584182",
@@ -629,7 +614,7 @@ colors = {
         "#80AD86",
         "#599662",
         "#397A45",
-        "#1C5F2B",
+        "#1C5F2B"
     ],
     "BrTe": [
         "#6D4330",
@@ -644,7 +629,7 @@ colors = {
         "#7AA8B7",
         "#578D9F",
         "#377284",
-        "#1B5869",
+        "#1B5869"
     ],
     "GdBu": [
         "#674824",
@@ -659,7 +644,7 @@ colors = {
         "#79A7B7",
         "#568C9E",
         "#377183",
-        "#1A5768",
+        "#1A5768"
     ],
     "MgGn": [
         "#67377A",
@@ -674,7 +659,7 @@ colors = {
         "#81B078",
         "#5F9654",
         "#407A34",
-        "#245E18",
+        "#245E18"
     ],
     "RdYlBu": [
         "#8A3530",
@@ -689,7 +674,7 @@ colors = {
         "#8DA9C0",
         "#698EB4",
         "#4572A7",
-        "#1E5799",
+        "#1E5799"
     ],
     "BrGn": [
         "#7D4816",
@@ -704,7 +689,7 @@ colors = {
         "#89A69C",
         "#668D7F",
         "#427464",
-        "#1A5C4A",
+        "#1A5C4A"
     ],
     "PkTe": [
         "#7A3060",
@@ -719,11 +704,8 @@ colors = {
         "#89A6A2",
         "#668D87",
         "#43746E",
-        "#1A5C55",
+        "#1A5C55"
     ],
-    # ── Diverging — sequential single-hue pairs ───────────────────────────────
-    # Outer tips taken from index 7 of each sequential palette (4th from dark
-    # end); 13 stops interpolated at equal Oklab arc-length through #F6F6F6.
     "purplesgreens": [
         "#855BBC",
         "#9A74CF",
@@ -737,7 +719,7 @@ colors = {
         "#99BD99",
         "#73B175",
         "#4DA153",
-        "#2C8C38",
+        "#2C8C38"
     ],
     "lavendersgreens": [
         "#745DBD",
@@ -752,7 +734,7 @@ colors = {
         "#9ABC9B",
         "#76AE78",
         "#4DA153",
-        "#2C8C38",
+        "#2C8C38"
     ],
     "lavendersblues": [
         "#7263AB",
@@ -767,7 +749,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "purplesblues": [
         "#8A50CE",
@@ -782,7 +764,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "brownsblues": [
         "#B16E45",
@@ -797,7 +779,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "rosesblues": [
         "#C35082",
@@ -812,7 +794,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "greysblues": [
         "#636363",
@@ -827,7 +809,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "greysreds": [
         "#636363",
@@ -842,7 +824,7 @@ colors = {
         "#DFA1A5",
         "#D4858B",
         "#C96872",
-        "#BC4A5A",
+        "#BC4A5A"
     ],
     "greyspurples": [
         "#636363",
@@ -857,7 +839,7 @@ colors = {
         "#BEA5E5",
         "#AC8ADE",
         "#9B6ED7",
-        "#8A50CE",
+        "#8A50CE"
     ],
     "greyslavender": [
         "#636363",
@@ -872,7 +854,7 @@ colors = {
         "#B1ABD2",
         "#9B93C5",
         "#867BB8",
-        "#7263AB",
+        "#7263AB"
     ],
     "greysrose": [
         "#636363",
@@ -887,7 +869,7 @@ colors = {
         "#E2A4BA",
         "#D989A7",
         "#CE6D94",
-        "#C35082",
+        "#C35082"
     ],
     "greensblues": [
         "#338B3C",
@@ -902,7 +884,7 @@ colors = {
         "#97B4D4",
         "#71A1D6",
         "#488DD7",
-        "#2876C3",
+        "#2876C3"
     ],
     "redsgreens": [
         "#BD4859",
@@ -917,7 +899,7 @@ colors = {
         "#99BD99",
         "#73B175",
         "#4DA153",
-        "#2C8C38",
+        "#2C8C38"
     ],
     "redscyans": [
         "#BC4A5A",
@@ -932,7 +914,7 @@ colors = {
         "#9BB6B6",
         "#7DA1A1",
         "#608D8D",
-        "#417979",
+        "#417979"
     ],
     "redslavenders": [
         "#BC4A5A",
@@ -947,7 +929,7 @@ colors = {
         "#B1ABD2",
         "#9B93C5",
         "#867BB8",
-        "#7263AB",
+        "#7263AB"
     ],
     "redsviolets": [
         "#BC4A5A",
@@ -962,7 +944,7 @@ colors = {
         "#C09DD1",
         "#AE80C4",
         "#9C62B7",
-        "#8A43A9",
+        "#8A43A9"
     ],
     "redsneongreens": [
         "#BC4A5A",
@@ -977,7 +959,7 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
     "rosescyans": [
         "#C35082",
@@ -992,7 +974,7 @@ colors = {
         "#9BB6B6",
         "#7DA1A1",
         "#608D8D",
-        "#417979",
+        "#417979"
     ],
     "rosesgreens": [
         "#C44F82",
@@ -1007,7 +989,7 @@ colors = {
         "#97BF98",
         "#70B473",
         "#4DA153",
-        "#2C8C38",
+        "#2C8C38"
     ],
     "rosesneongreens": [
         "#C35082",
@@ -1022,7 +1004,7 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
     "orangesblues": [
         "#E97D1C",
@@ -1037,7 +1019,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "orangescyans": [
         "#E97D1C",
@@ -1052,7 +1034,7 @@ colors = {
         "#9BB6B6",
         "#7DA1A1",
         "#608D8D",
-        "#417979",
+        "#417979"
     ],
     "orangespurples": [
         "#E97D1C",
@@ -1067,7 +1049,7 @@ colors = {
         "#BEA5E5",
         "#AC8ADE",
         "#9B6ED7",
-        "#8A50CE",
+        "#8A50CE"
     ],
     "orangeslavenders": [
         "#E97D1C",
@@ -1082,7 +1064,7 @@ colors = {
         "#B1ABD2",
         "#9B93C5",
         "#867BB8",
-        "#7263AB",
+        "#7263AB"
     ],
     "orangesviolets": [
         "#E97D1C",
@@ -1097,7 +1079,7 @@ colors = {
         "#C09DD1",
         "#AE80C4",
         "#9C62B7",
-        "#8A43A9",
+        "#8A43A9"
     ],
     "orangesneongreens": [
         "#E97D1C",
@@ -1112,7 +1094,7 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
     "yellowsblues": [
         "#E5C227",
@@ -1127,7 +1109,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "yellowspurples": [
         "#E5C227",
@@ -1142,7 +1124,7 @@ colors = {
         "#BEA5E5",
         "#AC8ADE",
         "#9B6ED7",
-        "#8A50CE",
+        "#8A50CE"
     ],
     "yellowslavenders": [
         "#E5C227",
@@ -1157,7 +1139,7 @@ colors = {
         "#B1ABD2",
         "#9B93C5",
         "#867BB8",
-        "#7263AB",
+        "#7263AB"
     ],
     "brownsgreens": [
         "#BE662B",
@@ -1172,7 +1154,7 @@ colors = {
         "#9ABF9B",
         "#77B279",
         "#5A9D5E",
-        "#3F8845",
+        "#3F8845"
     ],
     "brownscyans": [
         "#B16E45",
@@ -1187,7 +1169,7 @@ colors = {
         "#9BB6B6",
         "#7DA1A1",
         "#608D8D",
-        "#417979",
+        "#417979"
     ],
     "brownsneongreens": [
         "#B16E45",
@@ -1202,7 +1184,7 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
     "magentasneongreens": [
         "#933F91",
@@ -1217,7 +1199,7 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
     "magentasgreens": [
         "#8E458C",
@@ -1232,7 +1214,7 @@ colors = {
         "#91C692",
         "#6EB571",
         "#4DA153",
-        "#2C8C38",
+        "#2C8C38"
     ],
     "magentasblues": [
         "#933F91",
@@ -1247,7 +1229,7 @@ colors = {
         "#9BB6D5",
         "#7DA1C9",
         "#5F8CBD",
-        "#4177B1",
+        "#4177B1"
     ],
     "magentascyans": [
         "#933F91",
@@ -1262,7 +1244,7 @@ colors = {
         "#9BB6B6",
         "#7DA1A1",
         "#608D8D",
-        "#417979",
+        "#417979"
     ],
     "violetsoranges": [
         "#8A43A9",
@@ -1277,7 +1259,7 @@ colors = {
         "#F4BB96",
         "#F1A775",
         "#ED9350",
-        "#E97D1C",
+        "#E97D1C"
     ],
     "violetsyellows": [
         "#8A43A9",
@@ -1292,7 +1274,7 @@ colors = {
         "#EDDDA0",
         "#EBD481",
         "#E8CB5D",
-        "#E5C227",
+        "#E5C227"
     ],
     "cyanspurples": [
         "#417979",
@@ -1307,7 +1289,7 @@ colors = {
         "#BEA5E5",
         "#AC8ADE",
         "#9B6ED7",
-        "#8A50CE",
+        "#8A50CE"
     ],
     "cyanslavenders": [
         "#417979",
@@ -1322,7 +1304,7 @@ colors = {
         "#B1ABD2",
         "#9B93C5",
         "#867BB8",
-        "#7263AB",
+        "#7263AB"
     ],
     "cyansviolets": [
         "#417979",
@@ -1337,7 +1319,7 @@ colors = {
         "#C09DD1",
         "#AE80C4",
         "#9C62B7",
-        "#8A43A9",
+        "#8A43A9"
     ],
     "purplesneongreens": [
         "#8A50CE",
@@ -1352,7 +1334,7 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
     "lavendersneongreens": [
         "#7263AB",
@@ -1367,7 +1349,7 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
     "greysgreens": [
         "#636363",
@@ -1382,7 +1364,7 @@ colors = {
         "#9CC19C",
         "#80AD81",
         "#669968",
-        "#4E8551",
+        "#4E8551"
     ],
     "greysyellows": [
         "#636363",
@@ -1397,7 +1379,7 @@ colors = {
         "#EDDDA0",
         "#EBD481",
         "#E8CB5D",
-        "#E5C227",
+        "#E5C227"
     ],
     "greysoranges": [
         "#636363",
@@ -1412,7 +1394,7 @@ colors = {
         "#F4BB96",
         "#F1A775",
         "#ED9350",
-        "#E97D1C",
+        "#E97D1C"
     ],
     "greyscyans": [
         "#636363",
@@ -1427,7 +1409,7 @@ colors = {
         "#9BB6B6",
         "#7DA1A1",
         "#608D8D",
-        "#417979",
+        "#417979"
     ],
     "greysmagentas": [
         "#636363",
@@ -1442,7 +1424,7 @@ colors = {
         "#C79AC4",
         "#B67CB3",
         "#A55EA2",
-        "#933F91",
+        "#933F91"
     ],
     "greysviolets": [
         "#636363",
@@ -1457,7 +1439,7 @@ colors = {
         "#C09DD1",
         "#AE80C4",
         "#9C62B7",
-        "#8A43A9",
+        "#8A43A9"
     ],
     "greysneongreens": [
         "#636363",
@@ -1472,9 +1454,8 @@ colors = {
         "#98CCA9",
         "#77BE90",
         "#52B078",
-        "#1CA15F",
+        "#1CA15F"
     ],
-    # mpl_Purples as Oklab starting point — paler/cooler than purples_oklab
     "lavenders": [
         "#EFEDF5",
         "#DAD9EB",
@@ -1487,34 +1468,25 @@ colors = {
         "#684EA1",
         "#5C3896",
         "#4E208B",
-        "#3F007D",
+        "#3F007D"
     ],
-    # --- discrete qualitative — nucleotide chemical identity ---
-    # 5 colors: A, T, G, C, U — chromatogram convention (A=green, T=red, G=gold, C=blue)
-    # U (uracil) violet to distinguish from T.
     "nucleotides": [
-        "#4D945E",  # A — green (greens[6])
-        "#BC4A5A",  # T — red (reds[7])
-        "#E5C227",  # G — gold (yellows[7])
-        "#4177B1",  # C — blue (blues[7])
-        "#9866D5",  # U — violet (purples[6])
+        "#4D945E",
+        "#BC4A5A",
+        "#E5C227",
+        "#4177B1",
+        "#9866D5"
     ],
-    # --- discrete qualitative — amino acid biochemical properties (Zappo-inspired) ---
-    # 8 groups: hydrophobic (A,I,L,M,V), aromatic (F,Y,W), positive (R,K),
-    #           negative (D,E), polar (S,T,N,Q,H), proline (P), glycine (G), cysteine (C)
-    #
-    # proteins:  Zappo-adjusted — blue=negative, green=polar, grey=G, magenta=P
     "proteins": [
-        "#000000",  # hydrophobic — near-black (greys[11]); was #1F1F1F
-        "#FCD62C",  # aromatic — yellow (yellows[5])
-        "#BC4A5A",  # positive — red (reds[7])
-        "#4177B1",  # negative — blue (blues[7])
-        "#4D945E",  # polar — green (greens[6])
-        "#AD4CAB",  # proline — magenta (magentas[6])
-        "#898989",  # glycine — grey (greys[5])
-        "#E97D1C",  # cysteine — orange (oranges[7])
+        "#000000",
+        "#FCD62C",
+        "#BC4A5A",
+        "#4177B1",
+        "#4D945E",
+        "#AD4CAB",
+        "#898989",
+        "#E97D1C"
     ],
-    # --- cmocean colormaps (9-color samples at linspace(0,1,9)) ---
     "cmocean_algae": [
         "#D6F9CF",
         "#BCE6B1",
@@ -1527,7 +1499,7 @@ colors = {
         "#175F3D",
         "#194A30",
         "#173722",
-        "#112414",
+        "#112414"
     ],
     "cmocean_amp": [
         "#F1ECEC",
@@ -1541,7 +1513,7 @@ colors = {
         "#921528",
         "#740F25",
         "#570D1D",
-        "#3C0911",
+        "#3C0911"
     ],
     "cmocean_balance": [
         "#171C42",
@@ -1555,7 +1527,7 @@ colors = {
         "#C66B51",
         "#A53631",
         "#750E21",
-        "#3C0911",
+        "#3C0911"
     ],
     "cmocean_curl": [
         "#141D43",
@@ -1569,7 +1541,7 @@ colors = {
         "#C9696A",
         "#A03B61",
         "#6C1A53",
-        "#330D35",
+        "#330D35"
     ],
     "cmocean_deep": [
         "#FDFDCC",
@@ -1583,7 +1555,7 @@ colors = {
         "#40508B",
         "#3D3B6D",
         "#34294C",
-        "#271A2C",
+        "#271A2C"
     ],
     "cmocean_delta": [
         "#101F3F",
@@ -1597,7 +1569,7 @@ colors = {
         "#799B1D",
         "#387625",
         "#154D25",
-        "#172312",
+        "#172312"
     ],
     "cmocean_dense": [
         "#E6F0F0",
@@ -1611,7 +1583,7 @@ colors = {
         "#6F2F86",
         "#601F61",
         "#4C1440",
-        "#360E24",
+        "#360E24"
     ],
     "cmocean_diff": [
         "#07223F",
@@ -1625,7 +1597,7 @@ colors = {
         "#948866",
         "#6C6339",
         "#444118",
-        "#1C2206",
+        "#1C2206"
     ],
     "cmocean_gray": [
         "#000000",
@@ -1639,7 +1611,7 @@ colors = {
         "#A6A6A5",
         "#C3C2C1",
         "#E0E0DF",
-        "#FEFEFD",
+        "#FEFEFD"
     ],
     "cmocean_haline": [
         "#29186B",
@@ -1653,7 +1625,7 @@ colors = {
         "#75C869",
         "#A8D665",
         "#D6E376",
-        "#FDEE99",
+        "#FDEE99"
     ],
     "cmocean_ice": [
         "#030512",
@@ -1667,7 +1639,7 @@ colors = {
         "#73B7CD",
         "#98CFD9",
         "#C1E6E9",
-        "#EAFCFD",
+        "#EAFCFD"
     ],
     "cmocean_matter": [
         "#FDEDB0",
@@ -1681,7 +1653,7 @@ colors = {
         "#8A1E62",
         "#6A195B",
         "#4B144F",
-        "#2F0F3D",
+        "#2F0F3D"
     ],
     "cmocean_oxy": [
         "#3F0505",
@@ -1695,7 +1667,7 @@ colors = {
         "#E5E5D9",
         "#E6E389",
         "#E6D42C",
-        "#DCAE19",
+        "#DCAE19"
     ],
     "cmocean_phase": [
         "#A7770C",
@@ -1709,7 +1681,7 @@ colors = {
         "#1C949C",
         "#399760",
         "#748D1C",
-        "#A7770C",
+        "#A7770C"
     ],
     "cmocean_rain": [
         "#EEEDF2",
@@ -1723,7 +1695,7 @@ colors = {
         "#125B67",
         "#204559",
         "#242F48",
-        "#211A38",
+        "#211A38"
     ],
     "cmocean_solar": [
         "#331317",
@@ -1737,7 +1709,7 @@ colors = {
         "#D3AA23",
         "#D9C630",
         "#DEE13D",
-        "#E0FD4A",
+        "#E0FD4A"
     ],
     "cmocean_speed": [
         "#FEFCCD",
@@ -1751,7 +1723,7 @@ colors = {
         "#11642B",
         "#144E29",
         "#183820",
-        "#172312",
+        "#172312"
     ],
     "cmocean_tarn": [
         "#16230D",
@@ -1765,7 +1737,7 @@ colors = {
         "#6D9C8B",
         "#377479",
         "#164A66",
-        "#0F1E4F",
+        "#0F1E4F"
     ],
     "cmocean_tempo": [
         "#FEF5F4",
@@ -1779,7 +1751,7 @@ colors = {
         "#195E6A",
         "#1B485C",
         "#18324F",
-        "#141D43",
+        "#141D43"
     ],
     "cmocean_thermal": [
         "#032333",
@@ -1793,7 +1765,7 @@ colors = {
         "#F89243",
         "#FAB541",
         "#F4D749",
-        "#E7FA5A",
+        "#E7FA5A"
     ],
     "cmocean_topo": [
         "#271A2C",
@@ -1807,7 +1779,7 @@ colors = {
         "#53642D",
         "#9F8D4C",
         "#D8C188",
-        "#F8FDE4",
+        "#F8FDE4"
     ],
     "cmocean_turbid": [
         "#E8F5AB",
@@ -1821,10 +1793,8 @@ colors = {
         "#684834",
         "#4F3A2D",
         "#382C25",
-        "#221E1B",
+        "#221E1B"
     ],
-    # --- matplotlib colormaps (9-color samples at linspace(0,1,9)) ---
-    # perceptually uniform sequential
     "mpl_viridis": [
         "#440154",
         "#472270",
@@ -1837,7 +1807,7 @@ colors = {
         "#5DC862",
         "#96D646",
         "#CAE02D",
-        "#FDE724",
+        "#FDE724"
     ],
     "mpl_plasma": [
         "#0C0786",
@@ -1851,7 +1821,7 @@ colors = {
         "#F79342",
         "#FCB532",
         "#F9D625",
-        "#EFF821",
+        "#EFF821"
     ],
     "mpl_inferno": [
         "#000003",
@@ -1865,7 +1835,7 @@ colors = {
         "#F5831A",
         "#FAAE23",
         "#FAD858",
-        "#FCFEA4",
+        "#FCFEA4"
     ],
     "mpl_magma": [
         "#000003",
@@ -1879,7 +1849,7 @@ colors = {
         "#F67C62",
         "#FEA875",
         "#FED296",
-        "#FBFCBF",
+        "#FBFCBF"
     ],
     "mpl_cividis": [
         "#00224D",
@@ -1893,7 +1863,7 @@ colors = {
         "#BAAC6C",
         "#D1BF60",
         "#E8D250",
-        "#FDE737",
+        "#FDE737"
     ],
     "mpl_turbo": [
         "#30123B",
@@ -1907,9 +1877,8 @@ colors = {
         "#F89928",
         "#E65A13",
         "#B72403",
-        "#7A0402",
+        "#7A0402"
     ],
-    # sequential
     "mpl_Blues": [
         "#F7FBFF",
         "#DBE8F5",
@@ -1922,7 +1891,7 @@ colors = {
         "#1A67AD",
         "#0A539C",
         "#084184",
-        "#08306B",
+        "#08306B"
     ],
     "mpl_BuGn": [
         "#F7FCFD",
@@ -1936,7 +1905,7 @@ colors = {
         "#167D3A",
         "#006A2B",
         "#005723",
-        "#00441B",
+        "#00441B"
     ],
     "mpl_BuPu": [
         "#F7FCFD",
@@ -1950,7 +1919,7 @@ colors = {
         "#863795",
         "#7F107B",
         "#660562",
-        "#4D004B",
+        "#4D004B"
     ],
     "mpl_GnBu": [
         "#F7FCF0",
@@ -1964,7 +1933,7 @@ colors = {
         "#1C7AB5",
         "#0866AA",
         "#085395",
-        "#084081",
+        "#084081"
     ],
     "mpl_Greens": [
         "#F7FCF5",
@@ -1978,7 +1947,7 @@ colors = {
         "#167D3A",
         "#006A2B",
         "#005723",
-        "#00441B",
+        "#00441B"
     ],
     "mpl_Greys": [
         "#FFFFFF",
@@ -1992,7 +1961,7 @@ colors = {
         "#272727",
         "#121212",
         "#020202",
-        "#000000",
+        "#000000"
     ],
     "mpl_Oranges": [
         "#FFF5EB",
@@ -2006,7 +1975,7 @@ colors = {
         "#CB4302",
         "#B13A03",
         "#973004",
-        "#7F2704",
+        "#7F2704"
     ],
     "mpl_OrRd": [
         "#FFF7EC",
@@ -2020,7 +1989,7 @@ colors = {
         "#CE2718",
         "#B60804",
         "#9A0000",
-        "#7F0000",
+        "#7F0000"
     ],
     "mpl_PuBu": [
         "#FFF7FB",
@@ -2034,7 +2003,7 @@ colors = {
         "#046AA8",
         "#03598C",
         "#034871",
-        "#023858",
+        "#023858"
     ],
     "mpl_PuBuGn": [
         "#FFF7FB",
@@ -2048,7 +2017,7 @@ colors = {
         "#007B7D",
         "#016C5B",
         "#015948",
-        "#014636",
+        "#014636"
     ],
     "mpl_PuRd": [
         "#F7F4F9",
@@ -2062,7 +2031,7 @@ colors = {
         "#C10D51",
         "#A10346",
         "#830034",
-        "#67001F",
+        "#67001F"
     ],
     "mpl_Purples": [
         "#FCFBFD",
@@ -2076,7 +2045,7 @@ colors = {
         "#6A52A3",
         "#5D3B98",
         "#50218C",
-        "#3F007D",
+        "#3F007D"
     ],
     "mpl_RdPu": [
         "#FFF7F3",
@@ -2090,7 +2059,7 @@ colors = {
         "#A8027D",
         "#870278",
         "#670272",
-        "#49006A",
+        "#49006A"
     ],
     "mpl_Reds": [
         "#FFF5F0",
@@ -2104,7 +2073,7 @@ colors = {
         "#BE1419",
         "#A00D14",
         "#830510",
-        "#67000C",
+        "#67000C"
     ],
     "mpl_YlGn": [
         "#FFFFE5",
@@ -2118,7 +2087,7 @@ colors = {
         "#1F8041",
         "#076C38",
         "#005830",
-        "#004529",
+        "#004529"
     ],
     "mpl_YlGnBu": [
         "#FFFFD9",
@@ -2132,7 +2101,7 @@ colors = {
         "#2259A5",
         "#243D97",
         "#192A7A",
-        "#081D58",
+        "#081D58"
     ],
     "mpl_YlOrBr": [
         "#FFFFE5",
@@ -2146,7 +2115,7 @@ colors = {
         "#BA4403",
         "#9F3704",
         "#822D05",
-        "#662505",
+        "#662505"
     ],
     "mpl_YlOrRd": [
         "#FFFFCC",
@@ -2160,9 +2129,8 @@ colors = {
         "#D81320",
         "#BB0026",
         "#9D0027",
-        "#800026",
+        "#800026"
     ],
-    # sequential 2
     "mpl_afmhot": [
         "#000000",
         "#0E0000",
@@ -2175,7 +2143,7 @@ colors = {
         "#FFB337",
         "#FFE265",
         "#FFFFA8",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_autumn": [
         "#FF0000",
@@ -2189,7 +2157,7 @@ colors = {
         "#FFCC00",
         "#FFDD00",
         "#FFEE00",
-        "#FFFF00",
+        "#FFFF00"
     ],
     "mpl_binary": [
         "#FFFFFF",
@@ -2203,7 +2171,7 @@ colors = {
         "#272727",
         "#121212",
         "#020202",
-        "#000000",
+        "#000000"
     ],
     "mpl_bone": [
         "#000000",
@@ -2217,7 +2185,7 @@ colors = {
         "#94ACB3",
         "#ADCACA",
         "#D6E4E4",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_cool": [
         "#00FFFF",
@@ -2231,7 +2199,7 @@ colors = {
         "#AC56FF",
         "#C53CFF",
         "#E11EFF",
-        "#FF00FF",
+        "#FF00FF"
     ],
     "mpl_copper": [
         "#000000",
@@ -2245,7 +2213,7 @@ colors = {
         "#BE774C",
         "#DF8C59",
         "#F9A66A",
-        "#FFC77E",
+        "#FFC77E"
     ],
     "mpl_gist_gray": [
         "#000000",
@@ -2259,7 +2227,7 @@ colors = {
         "#A7A7A7",
         "#C3C3C3",
         "#E1E1E1",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_gist_heat": [
         "#000000",
@@ -2273,7 +2241,7 @@ colors = {
         "#FF8A28",
         "#FFB774",
         "#FFDCBA",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_gist_yarg": [
         "#FFFFFF",
@@ -2287,7 +2255,7 @@ colors = {
         "#272727",
         "#121212",
         "#020202",
-        "#000000",
+        "#000000"
     ],
     "mpl_gray": [
         "#000000",
@@ -2301,7 +2269,7 @@ colors = {
         "#A7A7A7",
         "#C3C3C3",
         "#E1E1E1",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_hot": [
         "#0A0000",
@@ -2315,7 +2283,7 @@ colors = {
         "#FFCB02",
         "#FFF905",
         "#FFFFA5",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_pink": [
         "#1E0000",
@@ -2329,7 +2297,7 @@ colors = {
         "#D3B397",
         "#DFD2A7",
         "#EDEDC6",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_spring": [
         "#FF00FF",
@@ -2343,7 +2311,7 @@ colors = {
         "#FFBD43",
         "#FFD330",
         "#FFE91A",
-        "#FFFF00",
+        "#FFFF00"
     ],
     "mpl_summer": [
         "#007F66",
@@ -2357,7 +2325,7 @@ colors = {
         "#BDDD66",
         "#D3E966",
         "#E9F466",
-        "#FFFF66",
+        "#FFFF66"
     ],
     "mpl_Wistia": [
         "#E4FF7A",
@@ -2371,7 +2339,7 @@ colors = {
         "#FEA500",
         "#FE9900",
         "#FD8C00",
-        "#FC7F00",
+        "#FC7F00"
     ],
     "mpl_winter": [
         "#0000FF",
@@ -2385,9 +2353,8 @@ colors = {
         "#00C69C",
         "#00D993",
         "#00EC8A",
-        "#00FF7F",
+        "#00FF7F"
     ],
-    # diverging
     "mpl_BrBG": [
         "#543005",
         "#7F4C0D",
@@ -2400,7 +2367,7 @@ colors = {
         "#51A99F",
         "#29847B",
         "#065F56",
-        "#003C30",
+        "#003C30"
     ],
     "mpl_bwr": [
         "#0000FF",
@@ -2414,7 +2381,7 @@ colors = {
         "#FFBEBE",
         "#FF9392",
         "#FF6260",
-        "#FF0000",
+        "#FF0000"
     ],
     "mpl_coolwarm": [
         "#3A4CC0",
@@ -2428,7 +2395,7 @@ colors = {
         "#EE8A6D",
         "#DF6550",
         "#CA3F3A",
-        "#B30326",
+        "#B30326"
     ],
     "mpl_PiYG": [
         "#8E0152",
@@ -2442,7 +2409,7 @@ colors = {
         "#91C75A",
         "#66A636",
         "#448521",
-        "#276419",
+        "#276419"
     ],
     "mpl_PRGn": [
         "#40004B",
@@ -2456,7 +2423,7 @@ colors = {
         "#6FB773",
         "#3E914E",
         "#196A31",
-        "#00441B",
+        "#00441B"
     ],
     "mpl_PuOr": [
         "#7F3B08",
@@ -2470,7 +2437,7 @@ colors = {
         "#8574B0",
         "#694A99",
         "#4B2476",
-        "#2D004B",
+        "#2D004B"
     ],
     "mpl_RdBu": [
         "#67001F",
@@ -2484,7 +2451,7 @@ colors = {
         "#5FA1CB",
         "#3479B6",
         "#18538D",
-        "#053061",
+        "#053061"
     ],
     "mpl_RdGy": [
         "#67001F",
@@ -2498,7 +2465,7 @@ colors = {
         "#888888",
         "#606060",
         "#3B3B3B",
-        "#1A1A1A",
+        "#1A1A1A"
     ],
     "mpl_RdYlBu": [
         "#A50026",
@@ -2512,7 +2479,7 @@ colors = {
         "#77AAD0",
         "#5386BD",
         "#405FA9",
-        "#313695",
+        "#313695"
     ],
     "mpl_RdYlGn": [
         "#A50026",
@@ -2526,7 +2493,7 @@ colors = {
         "#7EC765",
         "#45A958",
         "#1B8948",
-        "#006837",
+        "#006837"
     ],
     "mpl_seismic": [
         "#00004C",
@@ -2540,7 +2507,7 @@ colors = {
         "#FF8D8C",
         "#FE3931",
         "#C40000",
-        "#7F0000",
+        "#7F0000"
     ],
     "mpl_Spectral": [
         "#9E0142",
@@ -2554,9 +2521,8 @@ colors = {
         "#71BDAB",
         "#499EB5",
         "#5278AF",
-        "#5E4FA2",
+        "#5E4FA2"
     ],
-    # cyclic
     "mpl_hsv": [
         "#FF0000",
         "#FF8700",
@@ -2569,7 +2535,7 @@ colors = {
         "#770CFD",
         "#C72BE3",
         "#FE1BAA",
-        "#FF0017",
+        "#FF0017"
     ],
     "mpl_twilight": [
         "#E1D8E2",
@@ -2583,7 +2549,7 @@ colors = {
         "#A74C52",
         "#C07C6C",
         "#D0AD99",
-        "#E1D8E1",
+        "#E1D8E1"
     ],
     "mpl_twilight_shifted": [
         "#2F1337",
@@ -2597,9 +2563,8 @@ colors = {
         "#B7645C",
         "#933B52",
         "#651C49",
-        "#2F1436",
+        "#2F1436"
     ],
-    # qualitative
     "mpl_Accent": [
         "#7FC97F",
         "#BEAED4",
@@ -2609,7 +2574,7 @@ colors = {
         "#F0027F",
         "#BF5B16",
         "#666666",
-        "#666666",
+        "#666666"
     ],
     "mpl_Dark2": [
         "#1B9E77",
@@ -2620,7 +2585,7 @@ colors = {
         "#E6AB02",
         "#A6761D",
         "#666666",
-        "#666666",
+        "#666666"
     ],
     "mpl_Paired": [
         "#A6CEE3",
@@ -2631,7 +2596,7 @@ colors = {
         "#FF7F00",
         "#6A3D9A",
         "#FFFF99",
-        "#B15928",
+        "#B15928"
     ],
     "mpl_Pastel1": [
         "#FBB4AE",
@@ -2642,7 +2607,7 @@ colors = {
         "#FFFFCC",
         "#E5D8BD",
         "#FDDAEC",
-        "#F2F2F2",
+        "#F2F2F2"
     ],
     "mpl_Pastel2": [
         "#B3E2CD",
@@ -2653,7 +2618,7 @@ colors = {
         "#FFF2AE",
         "#F1E2CC",
         "#CCCCCC",
-        "#CCCCCC",
+        "#CCCCCC"
     ],
     "mpl_Set1": [
         "#E41A1C",
@@ -2664,7 +2629,7 @@ colors = {
         "#FFFF33",
         "#A65628",
         "#F781BF",
-        "#999999",
+        "#999999"
     ],
     "mpl_Set2": [
         "#66C2A5",
@@ -2675,7 +2640,7 @@ colors = {
         "#FFD92F",
         "#E5C494",
         "#B3B3B3",
-        "#B3B3B3",
+        "#B3B3B3"
     ],
     "mpl_Set3": [
         "#8DD3C7",
@@ -2686,7 +2651,7 @@ colors = {
         "#FCCDE5",
         "#BC80BD",
         "#CCEBC5",
-        "#FFED6F",
+        "#FFED6F"
     ],
     "mpl_tab10": [
         "#1F77B4",
@@ -2697,7 +2662,7 @@ colors = {
         "#E377C2",
         "#7F7F7F",
         "#BCBD22",
-        "#17BECF",
+        "#17BECF"
     ],
     "mpl_tab20": [
         "#1F77B4",
@@ -2708,7 +2673,7 @@ colors = {
         "#E377C2",
         "#C7C7C7",
         "#DBDB8D",
-        "#9EDAE5",
+        "#9EDAE5"
     ],
     "mpl_tab20b": [
         "#393B79",
@@ -2719,7 +2684,7 @@ colors = {
         "#843C39",
         "#E7969C",
         "#A55194",
-        "#DE9ED6",
+        "#DE9ED6"
     ],
     "mpl_tab20c": [
         "#3182BD",
@@ -2730,9 +2695,8 @@ colors = {
         "#756BB1",
         "#DADAEB",
         "#969696",
-        "#D9D9D9",
+        "#D9D9D9"
     ],
-    # miscellaneous
     "mpl_brg": [
         "#0000FF",
         "#3E01C3",
@@ -2745,7 +2709,7 @@ colors = {
         "#7D8200",
         "#61AB00",
         "#37D400",
-        "#00FF00",
+        "#00FF00"
     ],
     "mpl_CMRmap": [
         "#000000",
@@ -2759,7 +2723,7 @@ colors = {
         "#E58703",
         "#E5BD1A",
         "#E9EA97",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_cubehelix": [
         "#000000",
@@ -2773,7 +2737,7 @@ colors = {
         "#D28CB5",
         "#C6B6ED",
         "#CBE0EF",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_flag": [
         "#FF0000",
@@ -2787,7 +2751,7 @@ colors = {
         "#270000",
         "#120000",
         "#030000",
-        "#000000",
+        "#000000"
     ],
     "mpl_gist_earth": [
         "#000000",
@@ -2801,7 +2765,7 @@ colors = {
         "#A6AD5C",
         "#D3B392",
         "#EAD4C7",
-        "#FDFAFA",
+        "#FDFAFA"
     ],
     "mpl_gist_ncar": [
         "#000080",
@@ -2815,7 +2779,7 @@ colors = {
         "#FA265E",
         "#D35FE2",
         "#E5AAFB",
-        "#FEF7FE",
+        "#FEF7FE"
     ],
     "mpl_gist_rainbow": [
         "#FF0028",
@@ -2829,7 +2793,7 @@ colors = {
         "#0035FF",
         "#6C1DFF",
         "#B722EB",
-        "#FF00BF",
+        "#FF00BF"
     ],
     "mpl_gist_stern": [
         "#000000",
@@ -2843,7 +2807,7 @@ colors = {
         "#9B9E8A",
         "#BBBB33",
         "#E1E18F",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_gnuplot": [
         "#000000",
@@ -2857,7 +2821,7 @@ colors = {
         "#D35600",
         "#E79100",
         "#F5C800",
-        "#FFFF00",
+        "#FFFF00"
     ],
     "mpl_gnuplot2": [
         "#000000",
@@ -2871,7 +2835,7 @@ colors = {
         "#FF9275",
         "#FFC645",
         "#FFF07B",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_jet": [
         "#00007F",
@@ -2885,7 +2849,7 @@ colors = {
         "#FF9901",
         "#FF4500",
         "#C60F00",
-        "#7F0000",
+        "#7F0000"
     ],
     "mpl_nipy_spectral": [
         "#000000",
@@ -2899,7 +2863,7 @@ colors = {
         "#FD9900",
         "#EF3300",
         "#E77D6E",
-        "#CCCCCC",
+        "#CCCCCC"
     ],
     "mpl_ocean": [
         "#007F00",
@@ -2913,7 +2877,7 @@ colors = {
         "#50A6C4",
         "#8DC4D8",
         "#C6E2EC",
-        "#FFFFFF",
+        "#FFFFFF"
     ],
     "mpl_prism": [
         "#FF0000",
@@ -2927,7 +2891,7 @@ colors = {
         "#8467A9",
         "#BC54AA",
         "#FB9A00",
-        "#54FE00",
+        "#54FE00"
     ],
     "mpl_rainbow": [
         "#7F00FF",
@@ -2941,7 +2905,7 @@ colors = {
         "#F1C26C",
         "#FF9850",
         "#FF6734",
-        "#FF0000",
+        "#FF0000"
     ],
     "mpl_terrain": [
         "#333399",
@@ -2955,76 +2919,25 @@ colors = {
         "#815D56",
         "#AA908B",
         "#D3C6C4",
-        "#FFFFFF",
-    ],
+        "#FFFFFF"
+    ]
+};
+
+for (var paletteName in palettes) {
+    var hexColors = palettes[paletteName];
+    var colorGroup = doc.swatchGroups.add();
+    colorGroup.name = paletteName;
+    for (var i = 0; i < hexColors.length; i++) {
+        var rgb = hexToRGB(hexColors[i]);
+        var color = new RGBColor();
+        color.red = rgb[0];
+        color.green = rgb[1];
+        color.blue = rgb[2];
+        var swatch = doc.swatches.add();
+        swatch.name = paletteName + " - " + i;
+        swatch.color = color;
+        colorGroup.addSwatch(swatch);
+    }
 }
 
-
-def palette_range(
-    name: str,
-    n: int | None = None,
-    start: int = 0,
-    stop: int | None = None,
-    step: int = 1,
-    reverse: bool = False,
-) -> list[str]:
-    """
-    Sample colors from a named palette with control over start, stop, and spacing.
-
-    When ``n`` is provided, evenly samples ``n`` colors between ``start`` and
-    ``stop`` (linspace). Otherwise, returns every ``step``-th color from
-    ``start`` to ``stop`` — with default ``step=1`` this returns the full slice.
-
-    Parameters
-    ----------
-    name:
-        Key in the ``colors`` dict (e.g. ``"mpl_YlGnBu"``).
-    n:
-        Number of colors to return (evenly spaced). Takes priority over ``step``.
-    start:
-        Index of the first color to include. Defaults to 0.
-    stop:
-        Index of the last color to include (inclusive). Defaults to the last
-        index in the palette.
-    step:
-        Step between color indices. Defaults to 1 (every color).
-    reverse:
-        If True, reverse the returned list.
-
-    Examples
-    --------
-    All colors in the palette:
-
-        palette_range("mpl_YlGnBu")
-
-    Last 4 colors:
-
-        palette_range("mpl_YlGnBu", start=5)
-
-    Four evenly-spaced colors across the full palette:
-
-        palette_range("mpl_YlGnBu", n=4)
-
-    Every second color from index 0 to 6 (returns indices 0, 2, 4, 6):
-
-        palette_range("mpl_YlGnBu", stop=6, step=2)
-
-    Four evenly-spaced colors, reversed:
-
-        palette_range("mpl_YlGnBu", n=4, reverse=True)
-    """
-    palette = colors[name]
-    total = len(palette)
-    if stop is None:
-        stop = total - 1
-
-    if n is not None:
-        if n == 1:
-            indices = [start]
-        else:
-            indices = [round(start + i * (stop - start) / (n - 1)) for i in range(n)]
-    else:
-        indices = list(range(start, stop + 1, step))
-
-    result = [palette[i] for i in indices]
-    return result[::-1] if reverse else result
+alert("Imported " + Object.keys(palettes).length + " palettes.");
