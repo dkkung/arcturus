@@ -24,7 +24,7 @@ KEY = "blues2"
 
 # ── Patch group labels: "Group A" → "A" ─────────────────────────────────────
 
-_bg._BOX_CATS    = ["A", "B", "C", "D", "E"]
+_bg._BOX_CATS = ["A", "B", "C", "D", "E"]
 _bg._VIOLIN_CATS = ["A", "B", "C", "D", "E"]
 _bg._AREA_GROUPS = ["A", "B", "C", "D"]
 _bg._LINE_GROUPS = ["A", "B", "C", "D"]
@@ -38,24 +38,23 @@ for _attr in ("_box_df", "_violin_df", "_area_df", "_line_df", "_sbar_df", "_his
 
 # re-import patched references used in thumbnail-local functions
 from scripts.build.build_gallery import (  # noqa: E402
-    W,
-    _LINE_GROUPS,
-    _VIOLIN_CATS,
     _BOX_CATS,
+    _LINE_GROUPS,
     _SBAR_GROUPS,
     _SBAR_TYPES,
+    _VIOLIN_CATS,
+    W,
     _area,
+    _box_df,
     _heatmap,
     _histogram,
+    _line_df,
+    _sbar_df,
     _scatter,
     _seq_heatmap,
     _swatch,
-    _box_df,
-    _line_df,
-    _sbar_df,
     _violin_df,
 )
-
 
 # ── Volcano data ────────────────────────────────────────────────────────────
 
@@ -66,13 +65,15 @@ _neg_log10_p = np.abs(_log2fc) * _vol_rng.exponential(1.2, _n) + _vol_rng.expone
 _FC_THRESH = 1.0
 _P_THRESH = 1.3
 _vol_cat = np.where(
-    (_log2fc > _FC_THRESH) & (_neg_log10_p > _P_THRESH), "Up",
+    (_log2fc > _FC_THRESH) & (_neg_log10_p > _P_THRESH),
+    "Up",
     np.where((_log2fc < -_FC_THRESH) & (_neg_log10_p > _P_THRESH), "Down", "NS"),
 )
 _vol_df = pl.DataFrame({"log2fc": _log2fc, "neg_log10_p": _neg_log10_p, "category": _vol_cat})
 _VOL_CATS = ["Up", "NS", "Down"]
 
 # ── Thumbnail-specific chart overrides (no angled labels, no legends) ────────
+
 
 def _boxplot_no_angle(key):
     p = colors[key]
@@ -114,14 +115,20 @@ def _violin_no_legend(key):
     n = len(p)
     palette = [p[round(i * (n - 1) / (len(_VIOLIN_CATS) - 1))] for i in range(len(_VIOLIN_CATS))]
     return mark_violin(
-        _violin_df, "group", "value", _VIOLIN_CATS, palette=palette, legend=False, angledX=False, y_title=None
+        _violin_df,
+        "group",
+        "value",
+        _VIOLIN_CATS,
+        palette=palette,
+        legend=False,
+        angledX=False,
+        y_title=None,
     )
 
 
 def _volcano(key):
     p = colors[key]
-    n = len(p)
-    palette = [p[n - 1], colors["greys"][0], p[0]]  # Up=dark, NS=grey, Down=light
+    palette = [p[7], colors["greys"][0], p[0]]  # Up=blues2[7], NS=grey, Down=light
     points = (
         alt.Chart(_vol_df)
         .mark_point()
@@ -171,16 +178,19 @@ def _line_no_legend(key):
 
 # ── Build and save ───────────────────────────────────────────────────────────
 
+
 def build_thumbnail():
     theme.options(chartWidth=W, chartHeight=W, legend=False)
 
     _rs = dict(color="independent", opacity="independent")
     grid = alt.hconcat(
-        alt.vconcat(_area(KEY),                 _boxplot_no_angle(KEY),  spacing=6).resolve_scale(**_rs),
-        alt.vconcat(_stacked_bar_no_angle(KEY), _violin_no_legend(KEY),  spacing=6).resolve_scale(**_rs),
-        alt.vconcat(_histogram(KEY),            _volcano(KEY),           spacing=6).resolve_scale(**_rs),
-        alt.vconcat(_seq_heatmap(KEY),          _scatter(KEY),           spacing=6).resolve_scale(**_rs),
-        alt.vconcat(_heatmap(KEY),              _line_no_legend(KEY),    spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_area(KEY), _boxplot_no_angle(KEY), spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_stacked_bar_no_angle(KEY), _violin_no_legend(KEY), spacing=6).resolve_scale(
+            **_rs
+        ),  # noqa: E501
+        alt.vconcat(_histogram(KEY), _volcano(KEY), spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_seq_heatmap(KEY), _scatter(KEY), spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_heatmap(KEY), _line_no_legend(KEY), spacing=6).resolve_scale(**_rs),
         spacing=6,
     ).resolve_scale(**_rs)
 

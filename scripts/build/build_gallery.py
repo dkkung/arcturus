@@ -29,10 +29,10 @@ def _lin(c):
 def _hex_to_oklab(hx):
     h = hx.lstrip("#")
     r, g, b = [_lin(int(h[i : i + 2], 16) / 255) for i in (0, 2, 4)]
-    l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
+    lv = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
     m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b
     s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b
-    l_, m_, s_ = l ** (1 / 3), m ** (1 / 3), s ** (1 / 3)
+    l_, m_, s_ = lv ** (1 / 3), m ** (1 / 3), s ** (1 / 3)
     return (
         0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
         1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
@@ -336,7 +336,7 @@ _VIR_MAD = _mad_pct(_VIR_STEPS)
 
 # ── Layout constants ────────────────────────────────────────────────────────
 
-_N_ROW_CHARTS = 11  # colorspace, de_sparkline, area, scatter, line, boxplot, violin, stacked_bar, histogram, seq_heatmap, div_heatmap
+_N_ROW_CHARTS = 11  # colorspace, de_sparkline, area, scatter, line, boxplot, violin, stacked_bar, histogram, seq_heatmap, heatmap  # noqa: E501
 _ROW_SPACING = 6
 _SWATCH_W = _N_ROW_CHARTS * W + (_N_ROW_CHARTS - 1) * _ROW_SPACING  # 1160px
 

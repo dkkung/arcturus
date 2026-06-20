@@ -2,7 +2,6 @@ import altair as alt
 
 from .palettes import colors
 
-
 """
 Defining custom themes using global and
 rational configuration values. The theme

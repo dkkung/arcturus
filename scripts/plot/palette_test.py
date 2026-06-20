@@ -1,4 +1,5 @@
 import math
+
 import altair as alt
 import numpy as np
 import polars as pl
@@ -18,10 +19,10 @@ def _lin(c):
 def hex_to_oklab(hx):
     h = hx.lstrip("#")
     r, g, b = [_lin(int(h[i : i + 2], 16) / 255) for i in (0, 2, 4)]
-    l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
+    lv = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
     m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b
     s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b
-    l_, m_, s_ = l ** (1 / 3), m ** (1 / 3), s ** (1 / 3)
+    l_, m_, s_ = lv ** (1 / 3), m ** (1 / 3), s ** (1 / 3)
     L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_
     a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
     b_ = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
@@ -54,7 +55,7 @@ diverg2 = [("GdBu", "GdBu"), ("MgGn", "MgGn"), ("YlPu", "YlPu")]
 
 
 def variant(group, suffix, label_suffix):
-    return [(k + suffix, l + label_suffix) for k, l in group]
+    return [(k + suffix, lbl + label_suffix) for k, lbl in group]
 
 
 # ── Chart builders ─────────────────────────────────────────────────────────
@@ -129,7 +130,7 @@ def make_col(key, label):
 
 
 def make_row(group, title=""):
-    cols = [make_col(k, l) for k, l in group]
+    cols = [make_col(k, lbl) for k, lbl in group]
     return alt.hconcat(*cols, spacing=10, title=title).resolve_scale(color="independent")
 
 
