@@ -1,6 +1,10 @@
 # dkkung-altair-theme
 
-Custom Altair/Vega-Lite themes, palettes, and chart utilities with perceptual uniformity via Oklab.
+Custom Altair/Vega-Lite themes, perceptually uniform palettes, and chart utilities for publication-ready scientific figures.
+
+*This is a personal project under active development, so there may be breaking changes between minor versions.*
+
+![thumbnail](assets/thumbnail_light.png)
 
 ## Installation
 
@@ -128,9 +132,23 @@ theme.palette_range("blues", n=4, reverse=True)  # reversed
 | `step` | `1` | Step between indices (used when `n` is not set) |
 | `reverse` | `False` | Reverse the returned list |
 
+### Theme defaults
+
+When no explicit `scale=` is set on a color encoding, Vega-Lite falls back to the theme's range defaults:
+
+| Range type | Default palette | Used for |
+|---|---|---|
+| `category` | `blues` (even indices: 0, 2, 4, 6, 8, 10) | Nominal/unordered groups |
+| `ordinal` | `blues` | Ordered discrete values |
+| `ramp` | `blues` | Sequential continuous (legend ramps) |
+| `heatmap` | `blues` | Rect/heatmap marks |
+| `diverging` | `redsblues` | Diverging scales |
+
+Setting `theme.options(palette="mypalette")` overrides all five types simultaneously.
+
 ### Available palettes
 
-See `gallery.html` for a visual overview of all palettes.
+See `assets/gallery.html` for a visual overview of all palettes.
 
 **Sequential — Single-hue** (12 stops, light → dark):
 `blues`, `greens`, `purples`, `lavenders`, `violets`, `greys`, `reds`, `rose`, `oranges`, `browns`, `yellows`, `cyans`, `magentas`, `neongreens`
@@ -148,7 +166,7 @@ See `gallery.html` for a visual overview of all palettes.
 `greensblues`, `redsblues`, `redsgreens`, `redscyans`, `redslavenders`, `redsviolets`, `redsneongreens`, `rosesblues`, `rosescyans`, `rosesgreens`, `rosesneongreens`, `orangesblues`, `orangescyans`, `orangespurples`, `orangeslavenders`, `orangesviolets`, `orangesneongreens`, `yellowsblues`, `yellowspurples`, `yellowslavenders`, `brownsblues`, `brownsgreens`, `brownscyans`, `brownsneongreens`, `magentasneongreens`, `magentasgreens`, `magentasblues`, `magentascyans`, `violetsoranges`, `violetsyellows`, `purplesgreens`, `purplesblues`, `purplesneongreens`, `lavendersgreens`, `lavendersblues`, `lavendersneongreens`, `cyanspurples`, `cyanslavenders`, `cyansviolets`, `greysblues`, `greysreds`, `greysgreens`, `greyscyans`, `greysyellows`, `greysoranges`, `greysmagentas`, `greysviolets`, `greysneongreens`, `greyspurples`, `greyslavender`, `greysrose`
 
 **Discrete:**
-`nucleotide` (5 colors: A, T, G, C, U), `proteins` (8 biochemical groups: hydrophobic, aromatic, positive, negative, polar, proline, glycine, cysteine)
+`nucleotides` (5 colors: A, T, G, C, U), `proteins` (8 biochemical groups: hydrophobic, aromatic, positive, negative, polar, proline, glycine, cysteine)
 
 **Matplotlib ported** (prefixed `mpl_`):
 `mpl_viridis`, `mpl_plasma`, `mpl_inferno`, `mpl_magma`, `mpl_cividis`, `mpl_turbo`, `mpl_Blues`, `mpl_Greens`, `mpl_Greys`, `mpl_Oranges`, `mpl_Purples`, `mpl_Reds`, `mpl_YlGnBu`, `mpl_YlOrBr`, `mpl_YlOrRd`, and more.
@@ -345,7 +363,7 @@ uv run python scripts/build/build_gallery.py
 python scripts/build/build_gallery.py
 ```
 
-Writes `gallery.html` to the project root. Open in a browser to browse all palettes across 11 chart types.
+Writes `assets/gallery.html`. Open in a browser to browse all palettes across 11 chart types.
 
 ### Exporting swatches for Adobe Illustrator
 
