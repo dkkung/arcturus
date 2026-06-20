@@ -3,6 +3,7 @@ Generates assets/thumbnail_light.png — the README preview image.
 
 Shows the blues2 palette across all gallery chart types (colorspace and
 ΔE sparkline omitted; legends hidden; group labels shortened to A/B/C/…).
+Two rows of 5 charts each.
 
 Usage (from project root):
     python scripts/build/build_thumbnail.py
@@ -11,6 +12,7 @@ Usage (from project root):
 from pathlib import Path
 
 import altair as alt
+import numpy as np
 import polars as pl
 
 import scripts.build.build_gallery as _bg
@@ -55,6 +57,21 @@ from scripts.build.build_gallery import (  # noqa: E402
 )
 
 
+# ── Volcano data ────────────────────────────────────────────────────────────
+
+_vol_rng = np.random.default_rng(42)
+_n = 500
+_log2fc = _vol_rng.normal(0, 1.5, _n)
+_neg_log10_p = np.abs(_log2fc) * _vol_rng.exponential(1.2, _n) + _vol_rng.exponential(0.3, _n)
+_FC_THRESH = 1.0
+_P_THRESH = 1.3
+_vol_cat = np.where(
+    (_log2fc > _FC_THRESH) & (_neg_log10_p > _P_THRESH), "Up",
+    np.where((_log2fc < -_FC_THRESH) & (_neg_log10_p > _P_THRESH), "Down", "NS"),
+)
+_vol_df = pl.DataFrame({"log2fc": _log2fc, "neg_log10_p": _neg_log10_p, "category": _vol_cat})
+_VOL_CATS = ["Up", "NS", "Down"]
+
 # ── Thumbnail-specific chart overrides (no angled labels, no legends) ────────
 
 def _boxplot_no_angle(key):
@@ -97,8 +114,38 @@ def _violin_no_legend(key):
     n = len(p)
     palette = [p[round(i * (n - 1) / (len(_VIOLIN_CATS) - 1))] for i in range(len(_VIOLIN_CATS))]
     return mark_violin(
-        _violin_df, "group", "value", _VIOLIN_CATS, palette=palette, legend=False, angledX=False
+        _violin_df, "group", "value", _VIOLIN_CATS, palette=palette, legend=False, angledX=False, y_title=None
     )
+
+
+def _volcano(key):
+    p = colors[key]
+    n = len(p)
+    palette = [p[n - 1], colors["greys"][0], p[0]]  # Up=dark, NS=grey, Down=light
+    points = (
+        alt.Chart(_vol_df)
+        .mark_point()
+        .encode(
+            x=alt.X("log2fc:Q", title=None),
+            y=alt.Y("neg_log10_p:Q", title=None),
+            color=alt.Color(
+                "category:N",
+                sort=_VOL_CATS,
+                title=None,
+                scale=alt.Scale(domain=_VOL_CATS, range=palette),
+                legend=None,
+            ),
+            opacity=alt.condition(
+                alt.datum.category == "NS",
+                alt.value(0.5),
+                alt.value(1.0),
+            ),
+        )
+    )
+    h_rule = alt.Chart(alt.Data(values=[{"y": _P_THRESH}])).mark_rule().encode(y="y:Q")
+    v_pos = alt.Chart(alt.Data(values=[{"x": _FC_THRESH}])).mark_rule().encode(x="x:Q")
+    v_neg = alt.Chart(alt.Data(values=[{"x": -_FC_THRESH}])).mark_rule().encode(x="x:Q")
+    return (points + h_rule + v_pos + v_neg).properties(width=W, height=W)
 
 
 def _line_no_legend(key):
@@ -127,24 +174,21 @@ def _line_no_legend(key):
 def build_thumbnail():
     theme.options(chartWidth=W, chartHeight=W, legend=False)
 
-    row = alt.hconcat(
-        _area(KEY),
-        _stacked_bar_no_angle(KEY),
-        _histogram(KEY),
-        _seq_heatmap(KEY),
-        _heatmap(KEY),
-        _boxplot_no_angle(KEY),
-        _violin_no_legend(KEY),
-        _scatter(KEY),
-        _line_no_legend(KEY),
+    _rs = dict(color="independent", opacity="independent")
+    grid = alt.hconcat(
+        alt.vconcat(_area(KEY),                 _boxplot_no_angle(KEY),  spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_stacked_bar_no_angle(KEY), _violin_no_legend(KEY),  spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_histogram(KEY),            _volcano(KEY),           spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_seq_heatmap(KEY),          _scatter(KEY),           spacing=6).resolve_scale(**_rs),
+        alt.vconcat(_heatmap(KEY),              _line_no_legend(KEY),    spacing=6).resolve_scale(**_rs),
         spacing=6,
-    ).resolve_scale(color="independent", opacity="independent")
+    ).resolve_scale(**_rs)
 
     chart = alt.vconcat(
         _swatch(KEY, KEY),
-        row,
-        spacing=2,
-    ).resolve_scale(color="independent", opacity="independent")
+        grid,
+        spacing=6,
+    ).resolve_scale(**_rs)
 
     out = Path(__file__).parent.parent.parent / "assets" / "thumbnail_light.png"
     chart.save(str(out), ppi=1200)

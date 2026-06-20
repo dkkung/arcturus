@@ -148,7 +148,7 @@ Setting `theme.options(palette="mypalette")` overrides all five types simultaneo
 
 ### Available palettes
 
-See `assets/gallery.html` for a visual overview of all palettes.
+See the [palette gallery](https://dkkung.github.io/theme/gallery.html) for a visual overview of all palettes, or open `assets/gallery.html` locally.
 
 **Sequential — Single-hue** (12 stops, light → dark):
 `blues`, `greens`, `purples`, `lavenders`, `violets`, `greys`, `reds`, `rose`, `oranges`, `browns`, `yellows`, `cyans`, `magentas`, `neongreens`

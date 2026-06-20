@@ -119,7 +119,7 @@ colors = {
         "#254360",
         "#1B3452",
     ],
-    "blues2": [
+    "blues2": [  # abyss
         "#BFE6F3",
         "#9DD2EB",
         "#7FBDE3",

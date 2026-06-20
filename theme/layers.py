@@ -4,6 +4,8 @@ import polars as pl
 
 from .transforms import add_beeswarm_offsets, add_jitter_offsets
 
+_UNSET = object()
+
 
 def mark_violin(
     df: pl.DataFrame,
@@ -20,6 +22,7 @@ def mark_violin(
     legend: bool = False,
     angledX: bool | None = None,
     steps: int = 200,
+    y_title: str | None = _UNSET,
 ) -> alt.LayerChart:
     """
     Build an Altair layer combining a violin plot behind a boxplot.
@@ -142,7 +145,7 @@ def mark_violin(
                     range=[band_center - mark_size * 0.75, band_center + mark_size * 0.75],
                 ),
             ),
-            y=alt.Y("__y:Q", title=y_col),
+            y=alt.Y("__y:Q", title=y_col if y_title is _UNSET else y_title),
             order=alt.Order("__order:Q"),
             color=alt.Color(
                 "__group:N",
@@ -168,7 +171,7 @@ def mark_violin(
         )
         .encode(
             x=alt.X(f"{x_col}:N", sort=categories),
-            y=alt.Y(f"{y_col}:Q", title=y_col),
+            y=alt.Y(f"{y_col}:Q", title=y_col if y_title is _UNSET else y_title),
         )
     )
 
