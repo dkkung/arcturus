@@ -1,6 +1,6 @@
-# dkkung-altair-theme
+# petaurus
 
-Custom Altair/Vega-Lite themes, perceptually uniform palettes, and chart utilities for publication-ready scientific figures.
+An Altair configuration wrapper with perceptually uniform palettes and chart utilities for publication-ready scientific figures.
 
 *This is a personal project under active development, so there may be breaking changes between minor versions.*
 
@@ -10,10 +10,10 @@ Custom Altair/Vega-Lite themes, perceptually uniform palettes, and chart utiliti
 
 ```sh
 # uv
-uv pip install -e .
+uv pip install git+https://github.com/dkkung/altair_custom_themes.git
 
 # pip
-pip install -e .
+pip install git+https://github.com/dkkung/altair_custom_themes.git
 ```
 
 Requires Python 3.11+. Dependencies: `altair`, `numpy`, `polars`, `scipy`.
@@ -25,7 +25,7 @@ Requires Python 3.11+. Dependencies: `altair`, `numpy`, `polars`, `scipy`.
 ```python
 import altair as alt
 import polars as pl
-import theme
+import petaurus as theme  # or: import petaurus
 
 theme.options(chartWidth=300, chartHeight=200)
 
@@ -47,7 +47,7 @@ theme.save(chart, "plots/myplot")
 
 ---
 
-## theme.options()
+## petaurus.options()
 
 **Call before building any Altair charts to configure global theme defaults.**
 
@@ -104,17 +104,17 @@ theme.options(   # custom configuration
 
 ## Palettes
 
-All custom palettes are built in [Oklab](https://bottosson.github.io/posts/oklab/) (Ottosson, *A perceptual color space for image processing*, 2020) for perceptual uniformity. They are stored in `theme.colors`, a plain `dict[str, list[str]]` mapping palette names to 12-stop hex lists (13 stops for diverging palettes).
+All custom palettes are built in [Oklab](https://bottosson.github.io/posts/oklab/) (Ottosson, *A perceptual color space for image processing*, 2020) for perceptual uniformity. They are stored in `petaurus.colors`, a plain `dict[str, list[str]]` mapping palette names to 12-stop hex lists (13 stops for diverging palettes).
 
 ### Accessing palettes
 
 ```python
-from theme.palettes import colors
+from petaurus.palettes import colors
 
 blues = colors["blues"]   # list of 12 hex strings, light → dark
 ```
 
-### theme.palette()
+### petaurus.palette()
 
 Samples a slice or subset from any named palette.
 
@@ -171,10 +171,10 @@ See the [palette gallery](https://dkkung.github.io/theme/) for a visual overview
 **Discrete:**
 `nucleotides` (5 colors: A, T, G, C, U), `proteins` (8 biochemical groups: hydrophobic, aromatic, positive, negative, polar, proline, glycine, cysteine)
 
-**Matplotlib ported** (prefixed `mpl_`):
+**Matplotlib ported** (prefixed with `mpl_`):
 `mpl_viridis`, `mpl_plasma`, `mpl_inferno`, `mpl_magma`, `mpl_cividis`, `mpl_turbo`, `mpl_Blues`, `mpl_Greens`, `mpl_Greys`, `mpl_Oranges`, `mpl_Purples`, `mpl_Reds`, `mpl_YlGnBu`, `mpl_YlOrBr`, `mpl_YlOrRd`, and more.
 
-**cmocean ported** (prefixed `cmocean_`):
+**cmocean ported** (prefixed with `cmocean_`):
 `cmocean_algae`, `cmocean_amp`, `cmocean_balance`, `cmocean_curl`, `cmocean_deep`, `cmocean_delta`, `cmocean_dense`, `cmocean_diff`, `cmocean_gray`, `cmocean_haline`, `cmocean_ice`, `cmocean_matter`, `cmocean_oxy`, `cmocean_phase`, `cmocean_rain`, `cmocean_solar`, `cmocean_speed`, `cmocean_tarn`, `cmocean_tempo`, `cmocean_thermal`, `cmocean_topo`, `cmocean_turbid`
 
 ---
@@ -200,7 +200,7 @@ theme.save(chart, "myplot", description="Figure 1")  # embed a description in th
 
 ## Custom marks
 
-### theme.mark_violin()
+### petaurus.mark_violin()
 
 Violin plot with an embedded boxplot.
 
@@ -228,7 +228,7 @@ theme.save(chart, "violin")
 | `angledX` | theme default | Angle x-axis labels |
 | `steps` | `200` | KDE grid resolution per group |
 
-### theme.mark_strip()
+### petaurus.mark_strip()
 
 Jittered or beeswarm points with a median tick and optional mean ± error bars.
 
@@ -250,7 +250,7 @@ chart = theme.mark_strip(df, "group", "value", CATEGORIES, scatter="beeswarm")
 
 ## Statistical annotations
 
-Add a p-value bracket between two groups using `theme.pvalue_layer()`. Combine with any chart using `+`.
+Add a p-value bracket between two groups using `petaurus.pvalue_layer()`. Combine with any chart using `+`.
 
 ```python
 ann = theme.pvalue_layer(
@@ -360,7 +360,7 @@ The four recipes are:
 3. **Diverging** — two arms meeting at an exact-white pivot; 13 stops so the white center lands exactly on the V-corner.
 4. **Chroma-scaling** — preserve L, scale `(a, b)` by a constant to derive lighter variants.
 
-Palette hex values live in `theme/palettes.py` as plain lists — no color math runs at import time.
+Palette hex values live in `petaurus/palettes.py` as plain lists — no color math runs at import time.
 
 ### Building the gallery
 
@@ -391,4 +391,4 @@ Generates `scripts/import_palettes_to_illustrator.jsx`. To import into Illustrat
 3. Select `scripts/import_palettes_to_illustrator.jsx`.
 4. All palettes are added as named swatch groups in the Swatches panel.
 
-Re-run this script after adding or modifying palettes in `theme/palettes.py`.
+Re-run this script after adding or modifying palettes in `petaurus/palettes.py`.
