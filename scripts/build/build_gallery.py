@@ -99,7 +99,7 @@ GROUPS = [
     (
         "Sequential — Multi-hue",
         [
-            "yellowgreen",
+            "greens",
             "ember",
             "dusk",
             "shoal",
