@@ -4,8 +4,8 @@ import altair as alt
 import numpy as np
 import polars as pl
 
-import petaurus as theme
-from petaurus.palettes import colors
+import arcturus as theme
+from arcturus.palettes import colors
 
 W = 65  # chart width / height
 

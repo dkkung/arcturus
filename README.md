@@ -1,19 +1,19 @@
-# petaurus
+# arcturus
 
 An Altair configuration wrapper with perceptually uniform palettes and chart utilities for publication-ready figures.
 
 *This is a personal project under active development, so there may be breaking changes between minor versions.*
 
-![thumbnail](https://raw.githubusercontent.com/dkkung/petaurus/main/docs/thumbnail_light.png)
+![thumbnail](https://raw.githubusercontent.com/dkkung/arcturus/main/docs/thumbnail_light.png)
 
 ## Installation
 
 ```sh
 # uv
-uv pip install petaurus
+uv pip install arcturus
 
 # pip
-pip install petaurus
+pip install arcturus
 ```
 
 Requires Python 3.11+. Dependencies: `altair`, `numpy`, `polars`, `scipy`.
@@ -25,7 +25,7 @@ Requires Python 3.11+. Dependencies: `altair`, `numpy`, `polars`, `scipy`.
 ```python
 import altair as alt
 import polars as pl
-import petaurus as theme  # or: import petaurus
+import arcturus as theme  # or: import arcturus
 
 theme.options(chartWidth=300, chartHeight=200)
 
@@ -47,7 +47,7 @@ theme.save(chart, "plots/myplot")
 
 ---
 
-## petaurus.options()
+## arcturus.options()
 
 **Call before building any Altair charts to configure global theme defaults.**
 
@@ -104,17 +104,17 @@ theme.options(   # custom configuration
 
 ## Palettes
 
-All custom palettes are built in [Oklab](https://bottosson.github.io/posts/oklab/) (Ottosson, *A perceptual color space for image processing*, 2020) for perceptual uniformity. They are stored in `petaurus.colors`, a plain `dict[str, list[str]]` mapping palette names to 12-stop hex lists (13 stops for diverging palettes).
+All custom palettes are built in [Oklab](https://bottosson.github.io/posts/oklab/) (Ottosson, *A perceptual color space for image processing*, 2020) for perceptual uniformity. They are stored in `arcturus.colors`, a plain `dict[str, list[str]]` mapping palette names to 12-stop hex lists (13 stops for diverging palettes).
 
 ### Accessing palettes
 
 ```python
-from petaurus.palettes import colors
+from arcturus.palettes import colors
 
 blues = colors["blues"]   # list of 12 hex strings, light → dark
 ```
 
-### petaurus.palette()
+### arcturus.palette()
 
 Samples a slice or subset from any named palette.
 
@@ -151,7 +151,7 @@ Setting `theme.options(palette="mypalette")` overrides all five types simultaneo
 
 ### Available palettes
 
-See the [palette gallery](https://dkkung.github.io/petaurus/) for a visual overview of all palettes, or open `docs/index.html` locally.
+See the [palette gallery](https://dkkung.github.io/arcturus/) for a visual overview of all palettes, or open `docs/index.html` locally.
 
 **Sequential — Single-hue** (12 stops, light → dark):
 `blues`, `greens`, `purples`, `lavenders`, `violets`, `greys`, `reds`, `rose`, `oranges`, `browns`, `yellows`, `cyans`, `magentas`, `neongreens`
@@ -200,7 +200,7 @@ theme.save(chart, "myplot", description="Figure 1")  # embed a description in th
 
 ## Custom marks
 
-### petaurus.mark_violin()
+### arcturus.mark_violin()
 
 Violin plot with an embedded boxplot.
 
@@ -228,7 +228,7 @@ theme.save(chart, "violin")
 | `angledX` | theme default | Angle x-axis labels |
 | `steps` | `200` | KDE grid resolution per group |
 
-### petaurus.mark_strip()
+### arcturus.mark_strip()
 
 Jittered or beeswarm points with a median tick and optional mean ± error bars.
 
@@ -250,7 +250,7 @@ chart = theme.mark_strip(df, "group", "value", CATEGORIES, scatter="beeswarm")
 
 ## Statistical annotations
 
-Add a p-value bracket between two groups using `petaurus.pvalue_layer()`. Combine with any chart using `+`.
+Add a p-value bracket between two groups using `arcturus.pvalue_layer()`. Combine with any chart using `+`.
 
 ```python
 ann = theme.pvalue_layer(
@@ -360,7 +360,7 @@ The four recipes are:
 3. **Diverging** — two arms meeting at an exact-white pivot; 13 stops so the white center lands exactly on the V-corner.
 4. **Chroma-scaling** — preserve L, scale `(a, b)` by a constant to derive lighter variants.
 
-Palette hex values live in `petaurus/palettes.py` as plain lists — no color math runs at import time.
+Palette hex values live in `arcturus/palettes.py` as plain lists — no color math runs at import time.
 
 ### Building the gallery
 
@@ -391,4 +391,4 @@ Generates `scripts/import_palettes_to_illustrator.jsx`. To import into Illustrat
 3. Select `scripts/import_palettes_to_illustrator.jsx`.
 4. All palettes are added as named swatch groups in the Swatches panel.
 
-Re-run this script after adding or modifying palettes in `petaurus/palettes.py`.
+Re-run this script after adding or modifying palettes in `arcturus/palettes.py`.

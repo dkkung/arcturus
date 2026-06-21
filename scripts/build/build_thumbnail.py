@@ -15,10 +15,10 @@ import altair as alt
 import numpy as np
 import polars as pl
 
-import petaurus as theme
+import arcturus as theme
 import scripts.build.build_gallery as _bg
-from petaurus.layers import mark_violin
-from petaurus.palettes import colors
+from arcturus.layers import mark_violin
+from arcturus.palettes import colors
 
 KEY = "blues2"
 

@@ -14,8 +14,8 @@ import altair as alt
 import numpy as np
 import polars as pl
 
-from petaurus.layers import mark_violin
-from petaurus.palettes import colors
+from arcturus.layers import mark_violin
+from arcturus.palettes import colors
 
 W = 100  # base chart width / height (px)
 
@@ -99,7 +99,6 @@ GROUPS = [
     (
         "Sequential — Multi-hue",
         [
-            "greens",
             "ember",
             "dusk",
             "shoal",
@@ -666,7 +665,7 @@ def _build_gallery():
 # ── Entry point ──────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    import petaurus as _theme
+    import arcturus as _theme
 
     _theme.options(chartWidth=W, chartHeight=W)
 

@@ -9,7 +9,7 @@ Usage:
 import json
 import pathlib
 
-from petaurus.palettes import colors
+from arcturus.palettes import colors
 
 
 def main():

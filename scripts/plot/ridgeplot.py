@@ -3,7 +3,7 @@ import numpy as np
 import polars as pl
 from scipy.stats import gaussian_kde
 
-import petaurus as theme
+import arcturus as theme
 
 rng = np.random.default_rng(42)
 

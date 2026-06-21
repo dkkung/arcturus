@@ -1,7 +1,7 @@
 import numpy as np
 import polars as pl
 
-import petaurus as theme
+import arcturus as theme
 
 rng = np.random.default_rng(42)
 
