@@ -100,7 +100,7 @@ def beeswarm_offsets(
             dy = abs(placed_y[j] - y)
             if dy >= d:
                 continue
-            half = np.sqrt(d ** 2 - dy ** 2)
+            half = np.sqrt(d**2 - dy**2)
             candidates.append(placed_x[j] + half)
             candidates.append(placed_x[j] - half)
 
@@ -108,7 +108,7 @@ def beeswarm_offsets(
         candidates.sort(key=abs)
         for cx in candidates:
             dists_sq = (placed_y[:n_placed] - y) ** 2 + (placed_x[:n_placed] - cx) ** 2
-            if n_placed == 0 or np.all(dists_sq >= d ** 2 - 1e-9):
+            if n_placed == 0 or np.all(dists_sq >= d**2 - 1e-9):
                 placed_y[n_placed] = y
                 placed_x[n_placed] = cx
                 n_placed += 1

@@ -83,9 +83,7 @@ def save(
         alt.theme.options["transparentBackground"] = original_transparent
 
 
-def _fix_tick_alignment(
-    path: str, band_padding: float = 0.1, chart_width: float = 100.0
-) -> None:
+def _fix_tick_alignment(path: str, band_padding: float = 0.1, chart_width: float = 100.0) -> None:
     """Move x-axis tick lines from Vega's floor'd integer positions to exact mark centers.
 
     Vega snaps axis tick group transforms to integers for crisp screen rendering but
@@ -177,8 +175,7 @@ def _fix_tick_alignment(
             return
 
         center_map = {
-            t: round(step * (band_padding + i + 0.5), 4)
-            for i, t in enumerate(sorted_ticks)
+            t: round(step * (band_padding + i + 0.5), 4) for i, t in enumerate(sorted_ticks)
         }
 
         def apply_analytic_fix(el: ET.Element) -> None:
