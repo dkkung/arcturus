@@ -301,7 +301,7 @@ theme.add_pvalue(..., pvalues=[0.002, 0.031])
 
 ## Grid labels
 
-`add_grid_labels()` attaches a condition table directly below a chart, replacing its x-axis labels. `add_grid_labels_detached()` returns the table as a standalone layer for manual composition with `alt.vconcat`.
+`add_multilabel()` attaches a condition table directly below a chart, replacing its x-axis labels. `add_multilabel_detached()` returns the table as a standalone layer for manual composition with `alt.vconcat`.
 
 ```python
 CONDITIONS = {
@@ -311,12 +311,12 @@ CONDITIONS = {
 }
 
 # attached — x-axis labels replaced by the table
-theme.add_grid_labels(chart, CONDITIONS, categories=CATEGORIES, style="plusminus")
+theme.add_multilabel(chart, CONDITIONS, categories=CATEGORIES, style="plusminus")
 
 # detached — compose manually
 alt.vconcat(
     chart,
-    theme.add_grid_labels_detached(CONDITIONS, categories=CATEGORIES, style="symbol"),
+    theme.add_multilabel_detached(CONDITIONS, categories=CATEGORIES, style="symbol"),
 ).resolve_scale(x="shared")
 ```
 
@@ -324,7 +324,7 @@ alt.vconcat(
 
 Three `style` options are available: `"plusminus"` renders `True` as `+` and `False` as `−`, `"symbol"` renders `True` as a filled mark and `False` as an unfilled mark (shape set by the `symbol` parameter, default `"circle"`) with an optional connecting rule, and `"text"` renders raw values as strings centered under each category.
 
-![Grid labels example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/grid_labels_example_light.png)
+![Grid labels example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/multilabel_example_light.png)
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -346,7 +346,7 @@ Three `style` options are available: `"plusminus"` renders `True` as `+` and `Fa
 > **Dark mode:** `"symbol"` style resolves fill colours from `theme.options()` at construction time. Pass a callable to `theme.save()` so the chart rebuilds after each darkmode toggle:
 > ```python
 > theme.save(
->     lambda: theme.add_grid_labels(chart, CONDITIONS, style="symbol", ...),
+>     lambda: theme.add_multilabel(chart, CONDITIONS, style="symbol", ...),
 >     "my_plot",
 > )
 > ```

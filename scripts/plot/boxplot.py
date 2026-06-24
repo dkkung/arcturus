@@ -79,7 +79,7 @@ test = {
     "Condition B": [True, True, True, True, True, True],
 }
 
-plot = theme.add_grid_labels(chart, test, categories=CATEGORIES, style="symbol", palette=palette)
+plot = theme.add_multilabel(chart, test, categories=CATEGORIES, style="symbol", palette=palette)
 
 theme.save(plot, "boxplot")
 print("saved boxplot")

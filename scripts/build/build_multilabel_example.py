@@ -1,11 +1,11 @@
 """
-Generates docs/grid_labels_example_light.png — the README preview for add_grid_labels.
+Generates docs/multilabel_example_light.png — the README preview for add_multilabel.
 
 Shows all three grid label styles (plusminus, symbol, text) side by side,
-each attached below a strip chart via add_grid_labels().
+each attached below a strip chart via add_multilabel().
 
 Usage (from project root):
-    uv run python scripts/build/build_grid_labels_example.py
+    uv run python scripts/build/build_multilabel_example.py
 """
 
 import tempfile
@@ -49,10 +49,10 @@ SCORES = {
 }
 
 
-def build_grid_labels_example():
+def build_multilabel_example():
     theme.options(chartFill="white", palette="blues2")
 
-    out_base = str(Path(__file__).parent.parent.parent / "docs" / "grid_labels_example")
+    out_base = str(Path(__file__).parent.parent.parent / "docs" / "multilabel_example")
 
     def make_chart() -> alt.HConcatChart:
         chart = theme.mark_strip(df, "group", "value", CATEGORIES)
@@ -66,11 +66,11 @@ def build_grid_labels_example():
             )
             return chart + label
 
-        pm = theme.add_grid_labels(
+        pm = theme.add_multilabel(
             corner_label("plusminus"), CONDITIONS, style="plusminus", **KWARGS
         )
-        dot = theme.add_grid_labels(corner_label("symbol"), CONDITIONS, style="symbol", **KWARGS)
-        txt = theme.add_grid_labels(corner_label("text"), SCORES, style="text", **KWARGS)
+        dot = theme.add_multilabel(corner_label("symbol"), CONDITIONS, style="symbol", **KWARGS)
+        txt = theme.add_multilabel(corner_label("text"), SCORES, style="text", **KWARGS)
         return alt.hconcat(pm, dot, txt)
 
     out_png = Path(out_base + "_light.png")
@@ -90,4 +90,4 @@ def build_grid_labels_example():
 
 
 if __name__ == "__main__":
-    build_grid_labels_example()
+    build_multilabel_example()

@@ -34,7 +34,7 @@ def save(
         one. When a callable is provided it is called fresh for each
         light/dark variant — after ``darkmode`` has been toggled — so any
         marks whose colours depend on ``theme.options()`` (e.g.
-        ``add_grid_labels``) are rebuilt with the correct palette each
+        ``add_multilabel``) are rebuilt with the correct palette each
         time.
     filename:
         Extensionless path for the output files (e.g. ``"myplot"`` or
@@ -59,7 +59,7 @@ def save(
     Callable — rebuilt per variant so dark-mode colours are correct::
 
         theme.save(
-            lambda: theme.add_grid_labels(chart, CONDITIONS, style="dots"),
+            lambda: theme.add_multilabel(chart, CONDITIONS, style="dots"),
             "plots/myplot",
         )
     """
@@ -69,7 +69,7 @@ def save(
     # _resolve() is called once per variant (or once for the spec).
     # When chart is a callable it is re-invoked each time so that any
     # marks whose colours read from alt.theme.options at construction time
-    # (e.g. add_grid_labels dot colours) pick up the correct
+    # (e.g. add_multilabel dot colours) pick up the correct
     # darkmode value that was just toggled above.
     def _resolve() -> alt.Chart:
         c = chart() if callable(chart) else chart

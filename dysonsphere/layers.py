@@ -685,7 +685,7 @@ def add_pvalue(
     return alt.layer(*layer_charts)
 
 
-def add_grid_labels_detached(
+def add_multilabel_detached(
     groups: dict[str, list],
     categories: list[str],
     *,
@@ -708,7 +708,7 @@ def add_grid_labels_detached(
 
     Each key in ``groups`` is a row label; its value is a list of booleans (or
     arbitrary strings/numbers), one per category. Combine with the main chart using
-    ``alt.vconcat(chart, add_grid_labels_detached(...)).resolve_scale(x="shared")``.
+    ``alt.vconcat(chart, add_multilabel_detached(...)).resolve_scale(x="shared")``.
 
     Parameters
     ----------
@@ -793,7 +793,7 @@ def add_grid_labels_detached(
     toggle::
 
         theme.save(
-            lambda: theme.add_grid_labels(chart, groups, style="symbol", ...),
+            lambda: theme.add_multilabel(chart, groups, style="symbol", ...),
             "my_plot",
         )
 
@@ -810,7 +810,7 @@ def add_grid_labels_detached(
         CATEGORIES = ["Ctrl", "Drug A", "Drug B", "Drug C"]
         theme.options(chartWidth=300)
         chart = theme.mark_strip(df, "group", "value", CATEGORIES)
-        ann = theme.add_grid_labels_detached(
+        ann = theme.add_multilabel_detached(
             {
                 "dTAG^V-1":         [False, True,  True,  True],
                 "ZFC3H1 WT":        [False, False, True,  False],
@@ -999,7 +999,7 @@ def add_grid_labels_detached(
     return chart.properties(width=chartWidth, height=chart_h)
 
 
-def add_grid_labels(
+def add_multilabel(
     chart: alt.Chart,
     groups: dict[str, list],
     categories: list[str],
@@ -1011,19 +1011,19 @@ def add_grid_labels(
     Compose a chart with a grid annotation table, replacing its x-axis labels.
 
     Strips x-axis labels and ticks from ``chart``, builds a
-    :func:`add_grid_labels_detached` layer, and returns
+    :func:`add_multilabel_detached` layer, and returns
     ``alt.vconcat(chart, annotation, spacing=spacing).resolve_scale(x="shared")``.
 
-    All keyword arguments beyond ``spacing`` are forwarded to :func:`add_grid_labels_detached`.
+    All keyword arguments beyond ``spacing`` are forwarded to :func:`add_multilabel_detached`.
 
     Parameters
     ----------
     chart:
         The main Altair chart (any type: ``Chart``, ``LayerChart``, etc.).
     groups:
-        Passed to :func:`add_grid_labels_detached`.
+        Passed to :func:`add_multilabel_detached`.
     categories:
-        Passed to :func:`add_grid_labels_detached`.
+        Passed to :func:`add_multilabel_detached`.
     spacing:
         Vertical gap in pixels between the chart and the annotation table.
         Defaults to 0 so the annotation sits flush below the axis line.
@@ -1033,7 +1033,7 @@ def add_grid_labels(
     ::
 
         chart = theme.mark_strip(df, "group", "value", CATEGORIES)
-        composed = theme.add_grid_labels(
+        composed = theme.add_multilabel(
             chart,
             {"dTAG^V-1": [False, True, True, True], "ZFC3H1 WT": [False, False, True, False]},
             categories=CATEGORIES,
@@ -1070,5 +1070,5 @@ def add_grid_labels(
                 _strip_x_labels(sub)
 
     _strip_x_labels(modified)
-    ann = add_grid_labels_detached(groups, categories, **kwargs)
+    ann = add_multilabel_detached(groups, categories, **kwargs)
     return alt.vconcat(modified, ann, spacing=spacing).resolve_scale(x="shared")
