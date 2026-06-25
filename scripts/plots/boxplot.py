@@ -69,6 +69,7 @@ ann = ds.add_pvalue(
     test="mannwhitneyu",
     categories=CATEGORIES,
     y_positions=[21, 25],
+    label_style="stars",
 )
 
 chart = points + boxplot + ann

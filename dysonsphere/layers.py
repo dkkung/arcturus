@@ -416,14 +416,16 @@ def _pvalue_layer(
             raise ValueError("categories is required when df and x_col are not provided.")
         categories = sorted(df[x_col].unique().to_list())
 
-    band_w = chartWidth / len(categories)
     g1_idx = categories.index(group1)
     g2_idx = categories.index(group2)
-    x_mid_px = ((g1_idx + g2_idx + 1) / 2) * band_w
 
     _rule_kwargs = {"strokeWidth": strokeWidth, "strokeDash": [0, 0]}
 
-    text_dy = 6 if reverse else -6
+    # Stars glyphs sit above the baseline with no descenders; p-value text has
+    # a 'p' descender that visually closes the gap. Reduce dy for stars so the
+    # whitespace above the bracket matches the p-value label appearance.
+    _dy_mag = 2 if label_style == "stars" else 6
+    text_dy = _dy_mag if reverse else -_dy_mag
     tick_y2 = y + tick_height if reverse else y - tick_height
 
     bar = (
@@ -436,6 +438,15 @@ def _pvalue_layer(
         )
     )
 
+    # Band center formula for xOffset charts (paddingInner=0 forced by xOffset,
+    # paddingOuter = bandPadding from theme):
+    #   step = chartWidth / (n + 2*bandPadding)
+    #   center_i = step * (bandPadding + i + 0.5)
+    # Verified against SVG tick positions.
+    band_padding = alt.theme.options.get("bandPadding", 0.1)
+    n = len(categories)
+    step = chartWidth / (n + 2 * band_padding)
+    x_mid_px = step * (2 * band_padding + g1_idx + g2_idx + 1) / 2
     text = (
         alt.Chart(alt.Data(values=[{"y": y, "label": label}]))
         .mark_text(align="center", fontSize=fontSize, dy=text_dy)
