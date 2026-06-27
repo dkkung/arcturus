@@ -360,13 +360,68 @@ Three `style` options are available: `"plusminus"` renders `True` as `+` and `Fa
 | `chartWidth` | `theme(chartWidth)` | Width of the annotation chart in pixels |
 | `fontSize` | `theme(fontSize)` | Font size for symbols and row labels |
 
-> **Dark mode:** `"symbol"` style resolves fill colours from `ds.theme()` at construction time. Pass a callable to `ds.save()` so the chart rebuilds after each darkmode toggle:
+ **Dark mode:** `"symbol"` style resolves fill colours from `ds.theme()` at construction time. Pass a callable to `ds.save()` so the chart rebuilds after each darkmode toggle:
 > ```python
 > ds.save(
 >     lambda: ds.add_multilabel(chart, CONDITIONS, style="symbol", ...),
 >     "my_plot",
 > )
 > ```
+
+---
+
+## Background shading
+
+`add_shade()` builds a background `mark_rect` layer. Compose it behind the main chart with `+`.
+
+**Band mode** (`categories` provided, `positions` omitted): shades every x-axis band, cycling colors through `palette` with `repeat` consecutive ticks per color.
+
+**Positions mode** (`positions` provided): shades explicit coordinate ranges as `(start, end)` tuples. String tuples reference category names on a nominal axis; numeric tuples reference data-space coordinates on a quantitative axis and auto-share the main chart's scale. Set `axis='both'` to draw intersection rects using nested pairs `((x_start, x_end), (y_start, y_end))` — each half is resolved independently, so mixed types (e.g. nominal x + quantitative y) work in the same rect.
+
+```python
+# band mode — alternating shades for every x-axis category
+shade = ds.add_shade(CATEGORIES, "group")
+chart = shade + main_chart
+
+# positions mode — y-axis region (quantitative)
+shade = ds.add_shade(
+    positions=[(7.5, 10.0)],
+    axis="y",
+    palette=[ds.palette("blues")[0]],
+)
+
+# positions mode — x-y intersection rect
+shade = ds.add_shade(
+    positions=[((7.5, 10.0), (7.5, 10.0))],
+    axis="both",
+    palette=[ds.palette("blues")[0]],
+    stroke=True,
+    strokeDash=True,
+)
+chart = shade + main_chart
+
+# positions mode — category spans on nominal x
+shade = ds.add_shade(
+    positions=[("Group A", "Group C"), ("Group E", "Group F")],
+    categories=CATEGORIES,
+)
+```
+
+![shade example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/shade_example_light.png)
+
+| Parameter | Default | Description |
+|---|---|---|
+| `categories` | `None` | Ordered category list. Required for band mode and string-valued positions |
+| `xCol` | `None` | x-axis column name (band mode only; not used internally) |
+| `positions` | `None` | List of `(start, end)` tuples (single-axis) or `((x_start, x_end), (y_start, y_end))` tuples (`axis='both'`). Activates positions mode |
+| `axis` | `'x'` | `'x'`, `'y'`, or `'both'`. Ignored in band mode (always `'x'`) |
+| `palette` | first two `greys` stops | List of hex colors to cycle through |
+| `repeat` | `1` | Consecutive ticks per color before advancing (band mode only) |
+| `opacity` | `1.0` | Fill opacity |
+| `stroke` | `False` | `True` → axis-style border: black/white per dark mode, `axisWidth` wide |
+| `strokeWidth` | `None` | Explicit border width in pixels. Overrides `axisWidth` when `stroke=True` |
+| `strokeDash` | `None` | `None` → solid; `True` → inherit `dashedWidth` from theme; list (e.g. `[4, 2]`) → explicit pattern |
+| `flush` | `None` | Extend outermost rects to the axis domain edge. `None` inherits from `theme(closed=...)` |
 
 ---
 
