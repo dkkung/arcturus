@@ -249,7 +249,7 @@ def add_pvalue(
     bracketStyle:
         ``'line'`` (horizontal bar only) or ``'bracket'`` (bar + end ticks).
     labelStyle:
-        ``'p'`` (default) renders ``p = 0.012`` / ``p < 0.001``. ``'asterisks'``
+        ``'p'`` (default) renders ``P = 0.012`` / ``P < 0.001``. ``'asterisks'``
         renders ``*`` / ``**`` / ``***`` / ``ns``.
     tickHeight:
         Height of bracket end ticks in data units. Defaults to
