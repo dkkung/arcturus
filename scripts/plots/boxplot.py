@@ -78,7 +78,6 @@ shade = ds.add_shade(
 chart = shade + points + boxplot  # with shading
 
 groups = {
-    # "n =": [152, 214, 187, 203, 198, 222],
     "Condition A": [False, False, False, False, False, True],
     "Condition B": [False, False, False, False, True, True],
     "Condition C": [False, False, False, True, True, True],
@@ -89,6 +88,9 @@ plot = ds.add_multilabel(
     groups,
     categories=CATEGORIES,
     rowStyles=["symbol", "symbol", "symbol"],
+    showSampleSize=True,
+    df=df,
+    xCol="group",
 )
 
 ds.save(plot, "boxplot")
