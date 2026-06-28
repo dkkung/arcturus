@@ -90,7 +90,7 @@ ds.theme(   # custom configuration
 | `legendStroke` | `False` | Draw a border around the legend box |
 | `markFill` | `"black"` | Default fill color for marks |
 | `markFillOpacity` | `1.0` | Default mark fill opacity |
-| `markSize` | `min(W, H) * 0.1` | Mark size; for points, this is area in sq px |
+| `markSize` | `min(chartWidth, chartHeight) * 0.1` | Mark size; for points, this is area in px<sup>2</sup> |
 | `markStroke` | `"black"` | Default stroke color for marks |
 | `markStrokeOpacity` | `1` | Default mark stroke opacity |
 | `palette` | `None` | Default color scheme applied to category, diverging, heatmap, and ramp scales. Accepts a key from `colors` or a raw list |
