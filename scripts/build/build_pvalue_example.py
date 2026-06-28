@@ -102,7 +102,9 @@ def build_pvalue_example():
     third = (
         third_base
         + ds.add_pvalue(
-            third_df, "group", "value",
+            third_df,
+            "group",
+            "value",
             pairs=[("A", "B")],
             categories=THIRD_CATEGORIES,
             bracketStyle="bracket",
