@@ -27,7 +27,7 @@ import altair as alt
 import polars as pl
 import dysonsphere as ds  # or: import dysonsphere
 
-ds.theme(chartWidth=300, chartHeight=200)
+ds.theme() # apply the default dysonsphere theme
 
 chart = (
     alt.Chart(df)
@@ -65,7 +65,6 @@ ds.theme(  # custom configuration
 
 | Parameter | Default | Description |
 |---|---|---|
-| `xLabelAngle` | `0` | X-axis label rotation in degrees (e.g. `-45`); negative = tilt left, positive = tilt right |
 | `axisOffset` | `tickSize` | Distance between axis line and data area |
 | `axisWidth` | `0.25` | Stroke width of axes, ticks, and rules |
 | `bandPadding` | `0.1` | Inner and outer padding for ordinal bands |
@@ -74,8 +73,8 @@ ds.theme(  # custom configuration
 | `chartWidth` | `100` | Default chart width in pixels |
 | `closed` | auto | Draw a border around the plot area. Auto-enabled when `viewFill` is set |
 | `darkmode` | `False` | Invert text and axis colors for dark backgrounds |
-| `dashedLine` | `False` | Render line marks dashed |
 | `dashedGrid` | `False` | Render axis grid lines dashed (uses `dashedWidth` pattern); off by default so grids are solid |
+| `dashedLine` | `False` | Render line marks dashed |
 | `dashedRule` | `True` | Render rule marks dashed |
 | `dashedWidth` | `[2, 2]` | Dash/gap pattern `[dash, gap]` in pixels |
 | `font` | `"HelveticaNeue"` | Font family for all labels and titles |
@@ -96,14 +95,15 @@ ds.theme(  # custom configuration
 | `ticks` | `True` | Show axis ticks |
 | `tickSize` | `3` | Tick length in pixels |
 | `transparentBackground` | `False` | Transparent chart background (overrides `chartFill`) |
-| `yLabelAngle` | `0` | Y-axis label rotation in degrees (e.g. `-90`); `labelAlign` is auto-derived from the angle |
 | `viewFill` | `None` | Fill color of the plot area only. Setting this auto-enables `closed` |
 | `xAxis` | `True` | Toggle for the x-axis — disabling hides the axis domain and axis ticks, but not axis labels |
 | `xDomain` | `True` | Show the x-axis domain line (overridden to `False` when `xAxis=False`) |
+| `xLabelAngle` | `0` | X-axis label rotation in degrees (e.g. `-45`); negative = tilt left, positive = tilt right |
 | `xLabels` | `True` | Show tick labels on the x-axis |
 | `xTicks` | `True` | Show ticks on the x-axis (overridden to `False` when `xAxis=False`) |
 | `yAxis` | `True` | Toggle for the y-axis — disabling hides the axis domain and axis ticks, but not axis labels |
 | `yDomain` | `True` | Show the y-axis domain line (overridden to `False` when `yAxis=False`) |
+| `yLabelAngle` | `0` | Y-axis label rotation in degrees (e.g. `-90`); `labelAlign` is auto-derived from the angle |
 | `yLabels` | `True` | Show tick labels on the y-axis |
 | `yTicks` | `True` | Show ticks on the y-axis (overridden to `False` when `yAxis=False`) |
 
@@ -113,7 +113,7 @@ ds.theme(  # custom configuration
 
 All custom palettes are built in [Oklab](https://bottosson.github.io/posts/oklab/) (Ottosson, *A perceptual color space for image processing*, 2020) for perceptual uniformity. They are stored in `dysonsphere.colors`, a plain `dict[str, list[str]]` mapping palette names to 12-stop hex lists (13 stops for diverging palettes).
 
-### Accessing palettes
+#### Accessing palettes
 
 ```python
 from dysonsphere.palettes import colors
@@ -634,7 +634,7 @@ The `x` and `y` parameters accept three forms: a `float`/`int` for quantitative 
 
 ![Nonlinear scale example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/nonlinear_example_light.png)
 
-#### Axis label reformatting (`log_label_expr`)
+#### Axis label reformatting
 
 `log_label_expr()` returns a Vega `labelExpr` string for typeset log-scale axis labels. Two notations are available:
 
@@ -670,7 +670,7 @@ Supports exponents up to ±99, covering all practical scientific and computing r
 | `base` | `10` | Logarithm base matching the axis scale |
 | `notation` | `"power"` | `"power"` or `"scientific"`. `"scientific"` requires `base=10` |
 
-#### Minor ticks (`add_log_ticks` and `add_pow_ticks`)
+#### Minor ticks
 
 **`add_log_ticks()`** — **Base 10** places ticks at the conventional 2×–9× integer multiples within each decade (8 minor ticks per decade, fixed). **Base 2** places `nMinor` equally-spaced ticks per octave in log space — default `nMinor=1` gives one tick at the geometric midpoint (√2 × 2ⁿ). Other integer bases also work using the same equal-spacing rule.
 
