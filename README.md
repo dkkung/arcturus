@@ -27,7 +27,7 @@ import altair as alt
 import polars as pl
 import dysonsphere as ds  # or: import dysonsphere
 
-ds.theme() # apply the default dysonsphere theme
+ds.theme()  # apply the default dysonsphere theme
 
 chart = (
     alt.Chart(df)
@@ -109,7 +109,15 @@ ds.theme(  # custom configuration
 
 ### Config file
 
-Persistent per-project or per-user overrides can be stored in a TOML config file instead of repeating kwargs in every script. dysonsphere looks for config files in this order (later files take precedence):
+Persistent per-project or per-user overrides can be stored in a TOML config file. Generate a template with all built-in presets commented out:
+
+```python
+ds.create_config()                 # writes dysonsphere.toml in the current directory
+ds.create_config("/my/dir")        # writes to a specific directory
+ds.create_config(persistent=True)  # writes to ~/.config/dysonsphere/ or %APPDATA%\dysonsphere\
+```
+
+dysonsphere looks for config files in this order (later files take precedence):
 
 1. `~/.config/dysonsphere/dysonsphere.toml` — user-wide; respects `$XDG_CONFIG_HOME`
 2. `dysonsphere.toml` — project-level; found by walking up from the current working directory to the filesystem root (like git locating `.git`)
@@ -143,10 +151,10 @@ transparentBackground=true
 ```
 
 ```python
-ds.theme(style="nih")                 # load NIH style
-ds.theme(style="notebook")            # switch to notebook style
-ds.theme(style="notebook", grid=True) # style + per-call override
-ds.theme()                            # back to dysonsphere built-in defaults
+ds.theme(style="nih")                  # load NIH style
+ds.theme(style="notebook")             # switch to notebook style
+ds.theme(style="notebook", grid=True)  # style + per-call override
+ds.theme()                             # back to dysonsphere built-in defaults
 ```
 
 Only the keys present in a section are applied — everything else uses the dysonsphere built-in defaults. Explicit kwargs always take precedence over the config file. Unknown section keys raise a `ValueError` immediately.
@@ -174,10 +182,10 @@ blues = colors["blues"]  # list of 12 hex strings, light → dark
 Samples a slice or subset from any named palette.
 
 ```python
-ds.palette("blues")  # all 12 stops
-ds.palette("blues", n=5)  # 5 evenly-spaced stops
-ds.palette("blues", start=3)  # stops 3–11
-ds.palette("blues", end=6, step=2)  # indices 0, 2, 4, 6
+ds.palette("blues")                     # all 12 stops
+ds.palette("blues", n=5)                # 5 evenly-spaced stops
+ds.palette("blues", start=3)            # stops 3–11
+ds.palette("blues", end=6, step=2)      # indices 0, 2, 4, 6
 ds.palette("blues", n=4, reverse=True)  # reversed
 ```
 
@@ -249,11 +257,11 @@ ds.save(chart, "plots/myplot")
 Produces light and dark PNG and SVG files from a single call. SVG output is post-processed to flatten Vega's redundant `<g>` wrappers, making it easier to navigate in Illustrator. A Vega-Lite JSON spec is also saved by default for full reproducibility.
 
 ```python
-ds.save(chart, "myplot", ppi=1200)  # default PPI; reduce for faster exports
-ds.save(chart, "myplot", saveVegaSpec=False)  # skip the JSON spec
+ds.save(chart, "myplot", ppi=1200)                # default PPI; reduce for faster exports
+ds.save(chart, "myplot", saveVegaSpec=False)      # skip the JSON spec
 ds.save(chart, "myplot", description="Figure 1")  # embed a description in the SVG
-ds.save(chart, "myplot", background=["light"])  # light variant only
-ds.save(chart, "myplot", background=["dark"])  # dark variant only
+ds.save(chart, "myplot", background=["light"])    # light variant only
+ds.save(chart, "myplot", background=["dark"])     # dark variant only
 ```
 
 ---
@@ -463,8 +471,8 @@ ds.add_multilabel(
     style="symbol",
     showSampleSize=True,
     df=df,
-    xCol="group",  # column used for x-axis grouping
-    sampleSizeIndex=0,  # insertion position among rows (default 0 = first)
+    xCol="group",           # column used for x-axis grouping
+    sampleSizeIndex=0,      # insertion position among rows (default 0 = first)
     sampleSizeLabel="n =",  # row label (default "n =")
 )
 ```
@@ -491,8 +499,8 @@ ds.add_multilabel(
     style="symbol",
     categoryLabel=True,
     categoryLabelPosition="bottom",  # "top" or "bottom" (default "bottom")
-    categoryLabelAngle=-45,  # degrees; default -45
-    categoryLabelHeight=None,  # auto-computed when None
+    categoryLabelAngle=-45,          # degrees; default -45
+    categoryLabelHeight=None,        # auto-computed when None
 )
 ```
 

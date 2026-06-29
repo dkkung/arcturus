@@ -1,7 +1,7 @@
 import altair as alt
 import pytest
 
-from dysonsphere.theme import _load_style_overrides, theme
+from dysonsphere.theme import _load_style_overrides, create_config, theme
 
 
 @pytest.fixture(autouse=True)
@@ -139,3 +139,47 @@ class TestStyleLoading:
         monkeypatch.chdir(tmp_path)
         overrides = _load_style_overrides(None)
         assert overrides == {}
+
+    def test_builtin_style_no_config_file(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        overrides = _load_style_overrides("nih")
+        assert overrides["fontSize"] == 6
+        assert overrides["axisWidth"] == pytest.approx(0.5)
+
+    def test_config_overrides_builtin_style(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[nih]\nfontSize = 9\n", encoding="utf-8"
+        )
+        overrides = _load_style_overrides("nih")
+        assert overrides["fontSize"] == 9
+        assert overrides["axisWidth"] == pytest.approx(0.5)  # from built-in preset
+
+
+class TestCreateConfig:
+    def test_creates_file(self, tmp_path):
+        create_config(tmp_path)
+        assert (tmp_path / "dysonsphere.toml").exists()
+
+    def test_contains_builtin_style_names(self, tmp_path):
+        create_config(tmp_path)
+        content = (tmp_path / "dysonsphere.toml").read_text()
+        assert "# [nih]" in content
+        assert "# [notebook]" in content
+        assert "# [presentation]" in content
+
+    def test_does_not_overwrite(self, tmp_path):
+        existing = tmp_path / "dysonsphere.toml"
+        existing.write_text("sentinel", encoding="utf-8")
+        create_config(tmp_path)
+        assert existing.read_text() == "sentinel"
+
+    def test_defaults_to_cwd(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        create_config()
+        assert (tmp_path / "dysonsphere.toml").exists()
+
+    def test_persistent_flag_writes_to_xdg(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+        create_config(persistent=True)
+        assert (tmp_path / "dysonsphere" / "dysonsphere.toml").exists()

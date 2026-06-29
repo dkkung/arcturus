@@ -7,6 +7,26 @@ import altair as alt
 
 from .palettes import colors
 
+_BUILTIN_STYLES: dict[str, dict[str, Any]] = {
+    "nih": {
+        "axisWidth": 0.5,
+        "fontSize": 6,
+        "fontWeight": 400,
+    },
+    "notebook": {
+        "chartWidth": 900,
+        "chartHeight": 900,
+        "darkmode": True,
+        "fontSize": 18,
+        "transparentBackground": True,
+    },
+    "presentation": {
+        "fontSize": 12,
+        "darkmode": True,
+        "transparentBackground": True,
+    },
+}
+
 _BUILTIN_DEFAULTS: dict[str, Any] = {
     "axisOffset": None,
     "axisWidth": 0.25,
@@ -69,11 +89,20 @@ def _find_project_config() -> Path | None:
         current = parent
 
 
+def _user_config_dir() -> Path:
+    """Platform-appropriate user config directory."""
+    if "XDG_CONFIG_HOME" in os.environ:
+        return Path(os.environ["XDG_CONFIG_HOME"]) / "dysonsphere"
+    if os.name == "nt":
+        appdata = os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming"))
+        return Path(appdata) / "dysonsphere"
+    return Path.home() / ".config" / "dysonsphere"
+
+
 def _config_paths() -> list[Path]:
     """Config file search paths in ascending priority order (user config < project)."""
     paths = []
-    xdg_home = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
-    user_config = xdg_home / "dysonsphere" / "dysonsphere.toml"
+    user_config = _user_config_dir() / "dysonsphere.toml"
     if user_config.exists():
         paths.append(user_config)
     project_config = _find_project_config()
@@ -83,9 +112,17 @@ def _config_paths() -> list[Path]:
 
 
 def _load_style_overrides(style: str | None) -> dict[str, Any]:
-    """Merge [default] and [style] blocks from all config files."""
-    merged: dict[str, Any] = {}
-    style_found = style is None
+    """
+    Build the final override dict for theme().
+
+    Merge order (ascending priority):
+      1. [default] blocks from config files   — user's global baseline
+      2. built-in style preset                — preset-specific values beat [default]
+      3. [style] blocks from config files     — user can customise the built-in preset
+    """
+    default_cfg: dict[str, Any] = {}
+    style_cfg: dict[str, Any] = {}
+    style_found_in_config = False
 
     for path in _config_paths():
         with open(path, "rb") as f:
@@ -100,15 +137,20 @@ def _load_style_overrides(style: str | None) -> dict[str, Any]:
                     )
 
         if "default" in config:
-            merged.update(config["default"])
+            default_cfg.update(config["default"])
 
         if style is not None and style in config:
-            merged.update(config[style])
-            style_found = True
+            style_cfg.update(config[style])
+            style_found_in_config = True
 
-    if not style_found:
-        raise ValueError(f"Style {style!r} not found in any dysonsphere config file.")
+    if style is not None and style not in _BUILTIN_STYLES and not style_found_in_config:
+        raise ValueError(f"Style {style!r} not found in built-in styles or any dysonsphere config file.")
 
+    merged: dict[str, Any] = {}
+    merged.update(default_cfg)
+    if style is not None:
+        merged.update(_BUILTIN_STYLES.get(style, {}))
+    merged.update(style_cfg)
     return merged
 
 
@@ -476,3 +518,56 @@ def _dysonsphere_theme() -> dict[str, Any]:
             },
         },
     }
+
+
+def _toml_value(v: Any) -> str:
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    return str(v)
+
+
+def create_config(directory: str | Path | None = None, *, persistent: bool = False) -> None:
+    """
+    Write a dysonsphere.toml template to *directory* (default: current working directory).
+
+    Pass persistent=True to write to the XDG user config directory
+    (~/.config/dysonsphere/dysonsphere.toml) instead — this file applies across
+    all your projects.
+
+    The file is not overwritten if it already exists. Open the file and uncomment
+    the sections you want to activate, then load them with ds.theme(style="name").
+    """
+    if persistent:
+        dest = _user_config_dir() / "dysonsphere.toml"
+    else:
+        dest = Path(directory) if directory is not None else Path.cwd()
+        dest = dest / "dysonsphere.toml"
+
+    if dest.exists():
+        print(f"dysonsphere.toml already exists at {dest} — not overwriting.")
+        return
+
+    lines = [
+        "# dysonsphere.toml",
+        "# Theme configuration for dysonsphere.",
+        "# Load a style with: ds.theme(style=\"name\")",
+        "#",
+        "# Only the keys present in a section are applied — everything else uses",
+        "# dysonsphere's built-in defaults. Unknown keys raise a ValueError immediately.",
+        "",
+        "# [default] applies to every ds.theme() call regardless of style.",
+        "# Leave it empty (or omit it) to use dysonsphere's built-in defaults unchanged.",
+        "[default]",
+        "",
+        "# Built-in styles — uncomment and edit to customise.",
+    ]
+
+    for name, params in _BUILTIN_STYLES.items():
+        lines.append("")
+        lines.append(f"# [{name}]")
+        for k, v in params.items():
+            lines.append(f"# {k} = {_toml_value(v)}")
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"Created {dest}")
