@@ -16,6 +16,12 @@ fontSize = 6
 axisWidth = 0.5
 fontWeight = 400
 
+[notebook]
+chartWidth=600
+chartHeight=600
+darkmode=true
+chartBackground="transparent"
+
 [presentation]
 fontSize = 12
 darkmode=true

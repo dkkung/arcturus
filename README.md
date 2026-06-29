@@ -129,16 +129,22 @@ fontSize = 6
 axisWidth = 0.5
 fontWeight = 400
 
+[notebook]
+chartWidth=600
+chartHeight=600
+darkmode=true
+chartBackground="transparent"
+
 [presentation]
 fontSize = 12
 darkmode=true
 ```
 
 ```python
-ds.theme(style="nih")            # load NIH style
-ds.theme(style="presentation")   # switch to presentation style
-ds.theme()                       # back to dysonsphere built-in defaults
-ds.theme(style="nih", grid=True) # style + per-call override
+ds.theme(style="nih")                 # load NIH style
+ds.theme(style="notebook")            # switch to notebook style
+ds.theme(style="notebook", grid=True) # style + per-call override
+ds.theme()                            # back to dysonsphere built-in defaults
 ```
 
 Only the keys present in a section are applied — everything else uses the dysonsphere built-in defaults. Explicit kwargs always take precedence over the config file. Unknown section keys raise a `ValueError` immediately.
