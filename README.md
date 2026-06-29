@@ -875,17 +875,23 @@ The four recipes are:
 
 Palette hex values live in `dysonsphere/palettes.py` as plain lists — no color math runs at import time.
 
-### Building the gallery
+### Building the gallery and docs
+
+Run all build scripts in one command:
 
 ```sh
 # uv
-uv run scripts/build/build_gallery.py
+uv run python scripts/build_all.py
 
 # pip
-python3 scripts/build/build_gallery.py
+python3 scripts/build_all.py
 ```
 
-Writes `docs/index.html`. Open in a browser to browse all palettes across 11 chart types.
+This runs all scripts in `scripts/build/` in sorted order, rebuilding the gallery (`docs/index.html`) and all example images. To rebuild only the gallery:
+
+```sh
+uv run python scripts/build/build_gallery.py
+```
 
 ### Exporting swatches for Adobe Illustrator
 
