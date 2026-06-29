@@ -7,6 +7,11 @@ import altair as alt
 
 from .palettes import colors
 
+# Snapshot of the original palette catalogue at import time — restored on each
+# theme() call so custom palettes from config files don't accumulate or bleed
+# across theme resets.
+_ORIGINAL_COLORS: dict[str, list[str]] = dict(colors)
+
 _BUILTIN_STYLES: dict[str, dict[str, Any]] = {
     "nih": {
         "axisWidth": 0.5,
@@ -154,6 +159,26 @@ def _load_style_overrides(style: str | None) -> dict[str, Any]:
     return merged
 
 
+def _load_custom_palettes() -> dict[str, list[str]]:
+    """Load [palettes] sections from all config files (later files take precedence)."""
+    custom: dict[str, list[str]] = {}
+    for path in _config_paths():
+        with open(path, "rb") as f:
+            config: dict[str, Any] = tomllib.load(f)
+        palettes_section = config.get("palettes", {})
+        for name, values in palettes_section.items():
+            if not isinstance(values, list) or len(values) == 0:
+                raise ValueError(
+                    f"Palette {name!r} in {path} must be a non-empty list of hex strings."
+                )
+            if not all(isinstance(v, str) for v in values):
+                raise ValueError(
+                    f"Palette {name!r} in {path} must contain only strings (hex color codes)."
+                )
+            custom[name] = values
+    return custom
+
+
 def theme(style: str | None = None, **kwargs: Any) -> None:
     """
     Configure and register the dysonsphere Altair theme.
@@ -168,6 +193,11 @@ def theme(style: str | None = None, **kwargs: Any) -> None:
     unknown = set(kwargs) - set(_BUILTIN_DEFAULTS)
     if unknown:
         raise TypeError(f"theme() got unexpected keyword argument(s): {sorted(unknown)}")
+
+    # Restore built-in palettes, then layer in any custom palettes from config files.
+    colors.clear()
+    colors.update(_ORIGINAL_COLORS)
+    colors.update(_load_custom_palettes())
 
     overrides = _load_style_overrides(style)
     p: dict[str, Any] = {**_BUILTIN_DEFAULTS, **overrides, **kwargs}
@@ -551,9 +581,9 @@ def create_config(directory: str | Path | None = None, *, persistent: bool = Fal
     lines = [
         "# dysonsphere.toml",
         "# Theme configuration for dysonsphere.",
-        "# Load a style with ds.theme(style=\"name\") or dysonsphere.theme(style=\"name\").",
+        "# Load a style with ds.theme(style=\"name\").",
         "",
-        "# Only the keys present in a section are applied — everything else uses",
+        "# Only the keys present in a section are applied - everything else uses",
         "# dysonsphere's built-in defaults. Unknown keys raise a ValueError immediately.",
         "",
         "# [default] applies to every ds.theme() call regardless of style.",
@@ -562,7 +592,7 @@ def create_config(directory: str | Path | None = None, *, persistent: bool = Fal
         "",
         "[default]",
         "",
-        "# Built-in styles — edit values or remove sections you don't need.",
+        "# Built-in styles - edit values or remove sections you don't need.",
     ]
 
     for name, params in _BUILTIN_STYLES.items():
@@ -573,7 +603,16 @@ def create_config(directory: str | Path | None = None, *, persistent: bool = Fal
 
     lines += [
         "",
-        "[my_style]  # rename this and add parameters below",
+        "# Custom styles - add your own style sections below",
+        "",
+        "[my_style]  # Rename to your desired style name",
+        "",
+        "# Custom palettes — lists of hex strings, available via ds.palette(\"name\")",
+        "# or ds.theme(palette=\"name\"). dysonsphere palettes are typically 12 stops",
+        "# for sequential palettes, and 13 stops for diverging palettes.",
+        "",
+        "[palettes]",
+        "# my_palette = [\"#DFE9F7\", \"#C6D9F1\", \"#ADC8EC\", \"#94B8E6\", \"#7AA8E0\", \"#6097DA\", \"#4D87CA\", \"#4177B1\", \"#386898\", \"#2F597F\", \"#264A69\", \"#1D3A58\"]",
     ]
 
     dest.parent.mkdir(parents=True, exist_ok=True)

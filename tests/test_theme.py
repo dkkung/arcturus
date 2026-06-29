@@ -184,3 +184,43 @@ class TestCreateConfig:
         monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
         create_config(persistent=True)
         assert (tmp_path / "dysonsphere" / "dysonsphere.toml").exists()
+
+
+class TestCustomPalettes:
+    def test_custom_palette_loaded(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            '[palettes]\nmy_pal = ["#ff0000", "#00ff00", "#0000ff"]\n', encoding="utf-8"
+        )
+        theme()
+        from dysonsphere.palettes import colors
+        assert "my_pal" in colors
+        assert colors["my_pal"] == ["#ff0000", "#00ff00", "#0000ff"]
+
+    def test_custom_palette_cleared_on_theme_reset(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            '[palettes]\nmy_pal = ["#ff0000"]\n', encoding="utf-8"
+        )
+        theme()
+        from dysonsphere.palettes import colors
+        assert "my_pal" in colors
+        monkeypatch.chdir("/")
+        theme()
+        assert "my_pal" not in colors
+
+    def test_empty_palette_raises(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[palettes]\nbad = []\n", encoding="utf-8"
+        )
+        with pytest.raises(ValueError, match="non-empty"):
+            theme()
+
+    def test_non_string_values_raises(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[palettes]\nbad = [1, 2, 3]\n", encoding="utf-8"
+        )
+        with pytest.raises(ValueError, match="strings"):
+            theme()

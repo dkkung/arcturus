@@ -126,11 +126,19 @@ Each file contains named style sections. Load a style with `ds.theme(style="name
 
 ```toml
 # dysonsphere.toml
+# Theme configuration for dysonsphere.
+# Load a style with ds.theme(style="name").
 
-# [default] is optional — omit it or leave it empty to use dysonsphere's
-# built-in defaults unchanged. Add keys here only to override specific
-# parameters for every ds.theme() call regardless of style.
+# Only the keys present in a section are applied - everything else uses
+# dysonsphere's built-in defaults. Unknown keys raise a ValueError immediately.
+
+# [default] applies to every ds.theme() call regardless of style.
+# Leave it empty or omit to use dysonsphere's built-in defaults unchanged,
+# or add keys to override the defaults.
+
 [default]
+
+# Built-in styles - edit values or remove sections you don't need.
 
 [nih]
 axisWidth = 0.5
@@ -138,18 +146,27 @@ fontSize = 6
 fontWeight = 400
 
 [notebook]
-chartWidth=900
-chartHeight=900
-darkmode=true
-fontSize=18
-transparentBackground=true
+chartWidth = 900
+chartHeight = 900
+darkmode = true
+fontSize = 18
+transparentBackground = true
 
 [presentation]
 fontSize = 12
-darkmode=true
-transparentBackground=true
+darkmode = true
+transparentBackground = true
 
-[my_style]  # rename this and add parameters below
+# Custom styles - add your own style sections below
+
+[my_style]  # Rename to your desired style name
+
+# Custom palettes — lists of hex strings, available via ds.palette("name")
+# or ds.theme(palette="name"). dysonsphere palettes are typically 12 stops
+# for sequential palettes, and 13 stops for diverging palettes.
+
+[palettes]
+# my_palette = ["#DFE9F7", "#C6D9F1", "#ADC8EC", "#94B8E6", "#7AA8E0", "#6097DA", "#4D87CA", "#4177B1", "#386898", "#2F597F", "#264A69", "#1D3A58"]
 ```
 
 ```python
@@ -159,7 +176,7 @@ ds.theme(style="notebook", grid=True)  # style + per-call override
 ds.theme()                             # back to dysonsphere built-in defaults
 ```
 
-Only the keys present in a section are applied — everything else uses the dysonsphere built-in defaults. Explicit kwargs always take precedence over the config file. Unknown section keys raise a `ValueError` immediately.
+Only the keys present in a style section are applied — everything else uses the dysonsphere built-in defaults. Explicit kwargs always take precedence over the config file. Unknown section keys raise a `ValueError` immediately. Custom palettes in `[palettes]` are loaded globally on every `ds.theme()` call and are reset when `ds.theme()` is called without a config file present.
 
 #### `notebook` style
 
@@ -177,6 +194,16 @@ All custom palettes are built in [Oklab](https://bottosson.github.io/posts/oklab
 from dysonsphere.palettes import colors
 
 blues = colors["blues"]  # list of 12 hex strings, light → dark
+```
+
+Custom palettes defined in a `[palettes]` block in `dysonsphere.toml` are merged into `colors` on each `ds.theme()` call and can be accessed the same way:
+
+```python
+ds.theme()  # loads custom palettes from dysonsphere.toml if present
+
+my_pal = colors["my_palette"]       # access directly
+ds.palette("my_palette", n=5)       # slice with palette()
+ds.theme(palette="my_palette")      # set as the default color scheme
 ```
 
 ### dysonsphere.palette()
@@ -213,6 +240,8 @@ When no explicit `scale=` is set on a color encoding, Vega-Lite falls back to th
 | `diverging` | `redsblues` | Diverging scales |
 
 Setting `ds.theme(palette="mypalette")` overrides all five types simultaneously.
+
+> **Note:** The gallery and examples in this README use `palette="blues2"` rather than the shipped default `blues`. `blues2` is a more saturated variant of `blues`.
 
 ### Available palettes
 
