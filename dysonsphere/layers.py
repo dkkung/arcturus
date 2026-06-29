@@ -1036,7 +1036,7 @@ def _multilabel_layer(
 
     def _norm(v: object) -> str:
         if isinstance(v, bool):
-            return "+" if v else "-"
+            return "+" if v else "−"
         return str(v)
 
     rows = [
@@ -1084,9 +1084,7 @@ def _multilabel_layer(
 
     # --- plusminus rows ---
     if plusminus_rows:
-        pm_df = marks_df.filter(pl.col("__label").is_in(plusminus_rows)).with_columns(
-            pl.col("__value").replace({"-": "−"})
-        )
+        pm_df = marks_df.filter(pl.col("__label").is_in(plusminus_rows))
         # align="center" is required — without it Vega-Lite's vertical band
         # placement drifts relative to other marks on some versions.
         layers.append(
@@ -1129,7 +1127,7 @@ def _multilabel_layer(
 
         plus_df = marks_df.filter(pl.col("__label").is_in(symbol_rows) & (pl.col("__value") == "+"))
         minus_df = marks_df.filter(
-            pl.col("__label").is_in(symbol_rows) & (pl.col("__value") == "-")
+            pl.col("__label").is_in(symbol_rows) & (pl.col("__value") == "−")
         )
 
         symbol_dy = -fontSize * 0.1
