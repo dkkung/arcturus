@@ -133,9 +133,10 @@ class TestSave:
         assert not (tmp_path / "out_vegalite.json").exists()
 
     def test_layer_chart(self, tmp_path):
+        from typing import cast
         df = pl.DataFrame({"x": ["A", "B"], "y": [1.0, 2.0]})
         base = alt.Chart(df).mark_point().encode(x="x:N", y="y:Q")
-        layer = alt.layer(base)
+        layer = cast(alt.LayerChart, alt.layer(base))
         save(layer, str(tmp_path / "out"), background=["light"])
         assert (tmp_path / "out_light.png").exists()
 

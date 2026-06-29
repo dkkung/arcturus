@@ -107,6 +107,42 @@ ds.theme(  # custom configuration
 | `yLabels` | `True` | Show tick labels on the y-axis |
 | `yTicks` | `True` | Show ticks on the y-axis (overridden to `False` when `yAxis=False`) |
 
+### Config file
+
+Persistent per-project or per-user overrides can be stored in a TOML config file instead of repeating kwargs in every script. dysonsphere looks for config files in this order (later files take precedence):
+
+1. `~/.config/dysonsphere/dysonsphere.toml` — user-wide; respects `$XDG_CONFIG_HOME`
+2. `dysonsphere.toml` — project-level; found by walking up from the current working directory to the filesystem root (like git locating `.git`)
+
+Each file contains named style sections. Load a style with `ds.theme(style="name")`. Calling `ds.theme()` again with a different `style=` (or none) replaces the theme entirely — styles do not accumulate.
+
+```toml
+# dysonsphere.toml
+
+# [default] is optional — omit it or leave it empty to use dysonsphere's
+# built-in defaults unchanged. Add keys here only to override specific
+# parameters for every ds.theme() call regardless of style.
+[default]
+
+[nih]
+fontSize = 6
+axisWidth = 0.5
+fontWeight = 400
+
+[presentation]
+fontSize = 12
+darkmode=true
+```
+
+```python
+ds.theme(style="nih")            # load NIH style
+ds.theme(style="presentation")   # switch to presentation style
+ds.theme()                       # back to dysonsphere built-in defaults
+ds.theme(style="nih", grid=True) # style + per-call override
+```
+
+Only the keys present in a section are applied — everything else uses the dysonsphere built-in defaults. Explicit kwargs always take precedence over the config file. Unknown section keys raise a `ValueError` immediately.
+
 ---
 
 ## Palettes

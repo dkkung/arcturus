@@ -1,7 +1,7 @@
 import altair as alt
 import pytest
 
-from dysonsphere.theme import theme
+from dysonsphere.theme import _load_style_overrides, theme
 
 
 @pytest.fixture(autouse=True)
@@ -81,3 +81,61 @@ class TestThemeRegistration:
     def test_theme_is_active(self):
         theme()
         assert alt.theme.active == "dysonsphere"
+
+    def test_unknown_kwarg_raises(self):
+        with pytest.raises(TypeError, match="unexpected keyword argument"):
+            theme(notAParam=42)  # type: ignore[call-arg]
+
+
+class TestStyleLoading:
+    def test_default_block_applied(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[default]\nfontSize = 5\n", encoding="utf-8"
+        )
+        overrides = _load_style_overrides(None)
+        assert overrides["fontSize"] == 5
+
+    def test_named_style_applied(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[nih]\nfontSize = 6\naxisWidth = 0.5\n", encoding="utf-8"
+        )
+        overrides = _load_style_overrides("nih")
+        assert overrides["fontSize"] == 6
+        assert overrides["axisWidth"] == pytest.approx(0.5)
+
+    def test_named_style_overrides_default(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[default]\nfontSize = 5\n[nih]\nfontSize = 6\n", encoding="utf-8"
+        )
+        overrides = _load_style_overrides("nih")
+        assert overrides["fontSize"] == 6
+
+    def test_explicit_kwarg_overrides_style(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[nih]\nfontSize = 6\n", encoding="utf-8"
+        )
+        theme(style="nih", fontSize=9)
+        assert alt.theme.options["fontSize"] == 9
+
+    def test_missing_style_raises(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text("[nih]\nfontSize = 6\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="'missing'"):
+            _load_style_overrides("missing")
+
+    def test_unknown_toml_key_raises(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "dysonsphere.toml").write_text(
+            "[nih]\nnotAParam = 99\n", encoding="utf-8"
+        )
+        with pytest.raises(ValueError, match="Unknown theme parameter"):
+            _load_style_overrides("nih")
+
+    def test_no_config_file_no_error(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        overrides = _load_style_overrides(None)
+        assert overrides == {}

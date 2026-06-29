@@ -1,131 +1,153 @@
+import os
+import tomllib
+from pathlib import Path
+from typing import Any
+
 import altair as alt
 
 from .palettes import colors
 
-"""
-Defining custom themes using global and
-rational configuration values. The theme
-must be added to the register uniquely
-for each function definition using the
-@ decorator to pass the function to the
-register.
-"""
+_BUILTIN_DEFAULTS: dict[str, Any] = {
+    "axisOffset": None,
+    "axisWidth": 0.25,
+    "bandPadding": 0.1,
+    "chartFill": None,
+    "chartHeight": 100,
+    "chartWidth": 100,
+    "closed": None,
+    "darkmode": False,
+    "dashedGrid": False,
+    "dashedLine": False,
+    "dashedRule": True,
+    "dashedWidth": [2, 2],
+    "font": "HelveticaNeue",
+    "fontSize": 7,
+    "fontStyle": "normal",
+    "fontWeight": 400,
+    "grid": False,
+    "gridColor": colors["greys"][0],
+    "legend": True,
+    "legendOffset": None,
+    "legendStroke": False,
+    "markFill": "black",
+    "markFillOpacity": 1.0,
+    "markMedianFill": "white",
+    "markMedianStroke": "black",
+    "markSize": None,
+    "markStroke": "black",
+    "markStrokeOpacity": 1,
+    "markStrokeWidth": None,
+    "palette": None,
+    "strokeCap": "round",
+    "ticks": True,
+    "tickSize": 3,
+    "transparentBackground": False,
+    "viewFill": None,
+    "xAxis": True,
+    "xDomain": True,
+    "xLabels": True,
+    "xLabelAngle": 0,
+    "xTicks": True,
+    "yAxis": True,
+    "yDomain": True,
+    "yLabels": True,
+    "yLabelAngle": 0,
+    "yTicks": True,
+}
 
 
-def theme(
-    axisOffset=None,  # defaults to tickSize if not set, or 0 if closed is True
-    axisWidth=0.25,
-    bandPadding=0.1,
-    closed=None,  # None = auto (True if viewFill is set, else False); set explicitly to override
-    chartFill=None,  # defaults to "white" (light) or "#1e1e1e" (dark) based on darkmode
-    chartHeight=100,
-    chartWidth=100,
-    darkmode=False,
-    dashedGrid=False,
-    dashedLine=False,
-    dashedRule=True,
-    dashedWidth=[2, 2],
-    font="HelveticaNeue",
-    fontSize=7,
-    fontStyle="normal",
-    fontWeight=400,  # only multiples of 100; 300 = light, 400 = normal/regular; 700 = bold
-    grid=False,
-    gridColor=colors["greys"][0],
-    legend=True,
-    legendOffset=None,  # defaults to tickSize if not set
-    legendStroke=False,
-    markFill="black",
-    markFillOpacity=1.0,
-    markMedianFill="white",
-    markMedianStroke="black",
-    markSize=None,  # defaults to min(chartWidth, chartHeight) * 0.1 if not set (10 for 100×100)
-    markStroke="black",
-    markStrokeOpacity=1,
-    markStrokeWidth=None,  # defaults to axisWidth if not set
-    palette=None,
-    strokeCap="round",  # "butt" | "round" | "square"
-    ticks=True,
-    tickSize=3,
-    transparentBackground=False,
-    viewFill=None,  # setting a color auto-enables closed
-    xAxis=True,
-    xDomain=True,
-    xLabels=True,
-    xLabelAngle=0,
-    xTicks=True,
-    yAxis=True,
-    yDomain=True,
-    yLabels=True,
-    yLabelAngle=0,
-    yTicks=True,
-):
+def _find_project_config() -> Path | None:
+    """Walk up from cwd to find the nearest dysonsphere.toml."""
+    current = Path.cwd()
+    while True:
+        candidate = current / "dysonsphere.toml"
+        if candidate.exists():
+            return candidate
+        parent = current.parent
+        if parent == current:
+            return None
+        current = parent
+
+
+def _config_paths() -> list[Path]:
+    """Config file search paths in ascending priority order (user config < project)."""
+    paths = []
+    xdg_home = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
+    user_config = xdg_home / "dysonsphere" / "dysonsphere.toml"
+    if user_config.exists():
+        paths.append(user_config)
+    project_config = _find_project_config()
+    if project_config is not None:
+        paths.append(project_config)
+    return paths
+
+
+def _load_style_overrides(style: str | None) -> dict[str, Any]:
+    """Merge [default] and [style] blocks from all config files."""
+    merged: dict[str, Any] = {}
+    style_found = style is None
+
+    for path in _config_paths():
+        with open(path, "rb") as f:
+            config: dict[str, Any] = tomllib.load(f)
+
+        for section in ("default", style):
+            if section and section in config:
+                unknown = set(config[section]) - set(_BUILTIN_DEFAULTS)
+                if unknown:
+                    raise ValueError(
+                        f"Unknown theme parameter(s) in [{section}] of {path}: {sorted(unknown)}"
+                    )
+
+        if "default" in config:
+            merged.update(config["default"])
+
+        if style is not None and style in config:
+            merged.update(config[style])
+            style_found = True
+
+    if not style_found:
+        raise ValueError(f"Style {style!r} not found in any dysonsphere config file.")
+
+    return merged
+
+
+def theme(style: str | None = None, **kwargs: Any) -> None:
     """
     Configure and register the dysonsphere Altair theme.
-    Call this function when plotting to custom-set the
-    keyword arguments to override the defaults.
-    """
-    if closed is None:
-        closed = viewFill is not None  # auto-close when a view fill color is specified
-    if markSize is None:
-        markSize = min(chartWidth, chartHeight) * 0.1
-    if markStrokeWidth is None:
-        markStrokeWidth = axisWidth
-    if chartFill is None and not darkmode:
-        chartFill = "white"
 
-    alt.theme.options = {}  # must reset options to remove stale keys
-    alt.theme.options["xLabelAngle"] = xLabelAngle
-    alt.theme.options["axisOffset"] = axisOffset
-    alt.theme.options["axisWidth"] = axisWidth
-    alt.theme.options["bandPadding"] = bandPadding
-    alt.theme.options["chartFill"] = chartFill
-    alt.theme.options["chartHeight"] = chartHeight
-    alt.theme.options["chartWidth"] = chartWidth
-    alt.theme.options["darkmode"] = darkmode
-    alt.theme.options["dashedGrid"] = dashedGrid
-    alt.theme.options["dashedLine"] = dashedLine
-    alt.theme.options["dashedRule"] = dashedRule
-    alt.theme.options["dashedWidth"] = dashedWidth
-    alt.theme.options["font"] = font
-    alt.theme.options["fontSize"] = fontSize
-    alt.theme.options["fontStyle"] = fontStyle
-    alt.theme.options["fontWeight"] = fontWeight
-    alt.theme.options["grid"] = grid
-    alt.theme.options["gridColor"] = gridColor
-    alt.theme.options["legend"] = legend
-    alt.theme.options["legendOffset"] = legendOffset
-    alt.theme.options["legendStroke"] = legendStroke
-    alt.theme.options["markFill"] = markFill
-    alt.theme.options["markFillOpacity"] = markFillOpacity
-    alt.theme.options["markMedianFill"] = markMedianFill
-    alt.theme.options["markMedianStroke"] = markMedianStroke
-    alt.theme.options["markSize"] = markSize
-    alt.theme.options["markStroke"] = markStroke
-    alt.theme.options["markStrokeOpacity"] = markStrokeOpacity
-    alt.theme.options["markStrokeWidth"] = markStrokeWidth
-    alt.theme.options["palette"] = (
-        colors[palette] if palette is not None and palette in colors else palette
-    )  # accepts both custom-defined and vegafusion palettes
-    alt.theme.options["strokeCap"] = strokeCap
-    alt.theme.options["ticks"] = ticks
-    alt.theme.options["tickSize"] = tickSize
-    alt.theme.options["tickWidth"] = axisWidth
-    alt.theme.options["closed"] = closed
-    alt.theme.options["transparentBackground"] = transparentBackground
-    alt.theme.options["yLabelAngle"] = yLabelAngle
-    alt.theme.options["viewFill"] = viewFill
-    alt.theme.options["xAxis"] = xAxis
-    alt.theme.options["xDomain"] = xDomain
-    alt.theme.options["xLabels"] = xLabels
-    alt.theme.options["xTicks"] = xTicks
-    alt.theme.options["yAxis"] = yAxis
-    alt.theme.options["yDomain"] = yDomain
-    alt.theme.options["yLabels"] = yLabels
-    alt.theme.options["yTicks"] = yTicks
+    All parameters are optional — pass only the ones you want to change.
+    Everything else uses the dysonsphere built-in defaults.
+
+    A TOML config file can provide persistent per-project or per-user
+    overrides. See the README for the config file format and search path.
+    Named styles in the config file are selected with ``style=``.
+    """
+    unknown = set(kwargs) - set(_BUILTIN_DEFAULTS)
+    if unknown:
+        raise TypeError(f"theme() got unexpected keyword argument(s): {sorted(unknown)}")
+
+    overrides = _load_style_overrides(style)
+    p: dict[str, Any] = {**_BUILTIN_DEFAULTS, **overrides, **kwargs}
+
+    # Computed defaults — None means "derive from other params"
+    if p["closed"] is None:
+        p["closed"] = p["viewFill"] is not None
+    if p["markSize"] is None:
+        p["markSize"] = min(p["chartWidth"], p["chartHeight"]) * 0.1
+    if p["markStrokeWidth"] is None:
+        p["markStrokeWidth"] = p["axisWidth"]
+    if p["chartFill"] is None and not p["darkmode"]:
+        p["chartFill"] = "white"
+
+    palette = p["palette"]
+    p["palette"] = colors[palette] if palette is not None and palette in colors else palette
+
+    alt.theme.options = {**p, "tickWidth": p["axisWidth"]}
 
 
 @alt.theme.register("dysonsphere", enable=True)
-def _dysonsphere_theme():
+def _dysonsphere_theme() -> dict[str, Any]:
     opts = alt.theme.options
     return {
         "background": (
@@ -236,7 +258,6 @@ def _dysonsphere_theme():
                     "thickness": opts["markStrokeWidth"],
                 },
                 "box": {
-                    # 'fill': opts['markFill'],
                     "fillOpacity": opts["markFillOpacity"],
                     "stroke": opts["markStroke"],
                     "strokeOpacity": opts["markStrokeOpacity"],
@@ -250,7 +271,7 @@ def _dysonsphere_theme():
                     "strokeOpacity": opts["markStrokeOpacity"],
                     "strokeWidth": opts["markStrokeWidth"],
                 },
-                "rule": {  # may inherit undeclared fields from top-level rule config
+                "rule": {
                     "fill": "white" if opts["darkmode"] else "black",
                     "fillOpacity": opts["markFillOpacity"],
                     "size": opts["markSize"],
@@ -369,7 +390,6 @@ def _dysonsphere_theme():
                 "strokeWidth": opts["markStrokeWidth"],
             },
             "range": {
-                # pass in a list to AVOID interpolation; use {scheme: _} to USE interpolation
                 "category": {
                     "scheme": opts["palette"]
                     if opts.get("palette") is not None
@@ -450,7 +470,7 @@ def _dysonsphere_theme():
                 "discreteHeight": opts["chartHeight"],
                 "fill": None
                 if opts["darkmode"]
-                else opts["viewFill"],  # background of the plotted area
+                else opts["viewFill"],
                 "stroke": ("white" if opts["darkmode"] else "black") if opts["closed"] else None,
                 "strokeWidth": opts["axisWidth"],
             },
