@@ -210,29 +210,11 @@ ds.save(chart, "myplot", background=["dark"])  # dark variant only
 
 ---
 
-## Data transforms
+## Chart utilities
 
-### dysonsphere.add_jitter()
+### Data transforms
 
-Adds random Gaussian x-offsets to each row. Each offset is drawn independently from N(0, spread²) — ~68% of points fall within ±spread of centre, ~95% within ±2·spread. Points can overlap; use `add_beeswarm()` for small n where overlap is undesirable.
-
-```python
-df = ds.add_jitter(df, spread=5)
-
-alt.Chart(df).mark_circle().encode(
-    x=alt.X("group:N"),
-    y=alt.Y("value:Q"),
-    xOffset=alt.XOffset("jitter_x:Q"),
-)
-```
-
-| Parameter | Default | Description |
-|---|---|---|
-| `spread` | `min(chartWidth, chartHeight) / 50` | Standard deviation of jitter in pixels. Auto-scaled from theme dimensions (2.0 at default 100×100 px<sup>2</sup>) |
-| `outCol` | `"jitter_x"` | Output column name |
-| `seed` | `20220701` | Random seed |
-
-### dysonsphere.add_beeswarm()
+#### Beeswarm (`add_beeswarm`)
 
 Computes collision-avoiding x-offsets per group using an analytic method. Points are sorted by y position and placed greedily from the centre outward: for each point, the forbidden x intervals imposed by already-placed neighbours are computed exactly as `px ± √((2·spread)² − dy²)`, and the candidate closest to 0 outside all intervals is chosen. Better than jitter for small n; total width grows with n.
 
@@ -254,11 +236,52 @@ alt.Chart(df).mark_circle().encode(
 | `heightPx` | `theme(chartHeight)` | Chart height in pixels |
 | `outCol` | `"beeswarm_x"` | Output column name |
 
----
+#### Jitter (`add_jitter`)
 
-## Custom marks
+Adds random Gaussian x-offsets to each row. Each offset is drawn independently from N(0, spread²) — ~68% of points fall within ±spread of centre, ~95% within ±2·spread. Points can overlap; use `add_beeswarm()` for small n where overlap is undesirable.
 
-### dysonsphere.mark_violin()
+```python
+df = ds.add_jitter(df, spread=5)
+
+alt.Chart(df).mark_circle().encode(
+    x=alt.X("group:N"),
+    y=alt.Y("value:Q"),
+    xOffset=alt.XOffset("jitter_x:Q"),
+)
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `spread` | `min(chartWidth, chartHeight) / 50` | Standard deviation of jitter in pixels. Auto-scaled from theme dimensions (2.0 at default 100×100 px<sup>2</sup>) |
+| `outCol` | `"jitter_x"` | Output column name |
+| `seed` | `20220701` | Random seed |
+
+### Custom marks
+
+#### Strip (`mark_strip`)
+
+Jittered or beeswarm points with a median tick and optional mean ± error bars.
+
+```python
+chart = ds.mark_strip(df, "group", "value", CATEGORIES)
+chart = ds.mark_strip(df, "group", "value", CATEGORIES, scatter="beeswarm")
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `scatter` | `"jitter"` | `"jitter"` (fast, random Gaussian) or `"beeswarm"` (collision-avoidance) |
+| `palette` | `None` | List of colors for points |
+| `pointSize` | `theme(markSize)` | Point size in sq px |
+| `pointOpacity` | `theme(markFillOpacity)` | Point opacity |
+| `spread` | `None` | Point spread in pixels. For jitter: std dev (defaults to `min(chartWidth, chartHeight) / 50`). For beeswarm: collision radius (defaults to `√(markSize/π)` from theme) |
+| `legend` | `False` | Show a color legend |
+| `xLabelAngle` | `theme(xLabelAngle)` | X-axis label rotation in degrees |
+| `errorbars` | `True` | Show mean ± error bars |
+| `errorbarExtent` | `"sem"` | `"sem"` or `"sd"` |
+| `yTitle` | `yCol` | Y-axis title; `None` suppresses it |
+| `xTitle` | `None` | X-axis title; `None` (default) suppresses it |
+
+#### Violin (`mark_violin`)
 
 Violin plot with an embedded boxplot.
 
@@ -288,32 +311,7 @@ ds.save(chart, "violin")
 | `yTitle` | `yCol` | Y-axis title; `None` suppresses it |
 | `xTitle` | `None` | X-axis title; `None` (default) suppresses it |
 
-### dysonsphere.mark_strip()
-
-Jittered or beeswarm points with a median tick and optional mean ± error bars.
-
-```python
-chart = ds.mark_strip(df, "group", "value", CATEGORIES)
-chart = ds.mark_strip(df, "group", "value", CATEGORIES, scatter="beeswarm")
-```
-
-| Parameter | Default | Description |
-|---|---|---|
-| `scatter` | `"jitter"` | `"jitter"` (fast, random Gaussian) or `"beeswarm"` (collision-avoidance) |
-| `palette` | `None` | List of colors for points |
-| `pointSize` | `theme(markSize)` | Point size in sq px |
-| `pointOpacity` | `theme(markFillOpacity)` | Point opacity |
-| `spread` | `None` | Point spread in pixels. For jitter: std dev (defaults to `min(chartWidth, chartHeight) / 50`). For beeswarm: collision radius (defaults to `√(markSize/π)` from theme) |
-| `legend` | `False` | Show a color legend |
-| `xLabelAngle` | `theme(xLabelAngle)` | X-axis label rotation in degrees |
-| `errorbars` | `True` | Show mean ± error bars |
-| `errorbarExtent` | `"sem"` | `"sem"` or `"sd"` |
-| `yTitle` | `yCol` | Y-axis title; `None` suppresses it |
-| `xTitle` | `None` | X-axis title; `None` (default) suppresses it |
-
----
-
-## Statistical annotations
+### Statistical annotations (`add_pvalue`)
 
 `add_pvalue()` annotates one or more group comparisons with p-value brackets, stacking them automatically so they don't overlap. Combine with any chart using `+`.
 
@@ -385,10 +383,7 @@ ds.add_pvalue(
 | `fontSize` | `6` | Font size of p-value labels |
 | `decimals` | `3` | Decimal places in the p-value label (only for `labelStyle="p"`) |
 
-
----
-
-## Multilabels
+### Multilabels (`add_multilabel`)
 
 `add_multilabel()` attaches a condition table directly below a chart, replacing its x-axis labels. Both `groups` and `categories` are optional — you can call it with only sample sizes or category labels if that's all you need.
 
@@ -408,7 +403,7 @@ Rows can mix styles: set a global `style` and override individual rows with `row
 
 Three `style` options are available: `"plusminus"` renders `True` as `+` and `False` as `−`, `"symbol"` renders `True` as a filled mark and `False` as an unfilled mark (shape set by the `symbol` parameter, default `"circle"`) with an optional connecting rule whose direction is controlled by `orientation`, and `"text"` renders raw values as strings centered under each category.
 
-### Sample sizes
+#### Sample sizes
 
 Pass `showSampleSize=True` to automatically inject a per-category sample size row. Requires `df` and `xCol`; counts are computed via `ds.count_n()`.
 
@@ -436,7 +431,7 @@ Since `groups` defaults to `{}`, you can show only sample sizes with no other ro
 ds.add_multilabel(chart, categories=CATEGORIES, showSampleSize=True, df=df, xCol="group")
 ```
 
-### Category labels
+#### Category labels
 
 Pass `categoryLabel=True` to render the x-axis category names as angled text in a dedicated row, replacing the stripped axis labels. This row lives outside the data band scale and is always placed at the top or bottom.
 
@@ -485,17 +480,17 @@ ds.add_multilabel(
 | `categoryLabelAngle` | `-45` | Rotation angle of the category name text in degrees |
 | `categoryLabelHeight` | auto | Height in pixels reserved for the category label row; auto-computed from font size, angle, and longest label when `None` |
 
- **Dark mode:** `"symbol"` style resolves fill colours from `ds.theme()` at construction time — positive marks are white, unfilled marks use `greys[11]`. Pass a callable to `ds.save()` so the chart rebuilds after each darkmode toggle:
-> ```python
-> ds.save(
->     lambda: ds.add_multilabel(chart, CONDITIONS, style="symbol", ...),
->     "my_plot",
-> )
-> ```
+**Dark mode:** `"symbol"` style resolves fill colours from `ds.theme()` at construction time — positive marks are white, unfilled marks use `greys[11]`. Pass a callable to `ds.save()` so the chart rebuilds after each darkmode toggle:
+```python
+ds.save(
+    lambda: ds.add_multilabel(chart, CONDITIONS, style="symbol", ...),
+    "my_plot",
+)
+```
 
----
+### Chart annotations
 
-## Background shading
+#### Background shading (`add_shade`)
 
 `add_shade()` builds a background `mark_rect` layer. Compose it behind the main chart with `+`.
 
@@ -549,9 +544,7 @@ shade = ds.add_shade(
 | `strokeDash` | `None` | `None` → solid; `True` → inherit `dashedWidth` from theme; list (e.g. `[4, 2]`) → explicit pattern |
 | `flush` | `None` | Extend outermost rects to the axis domain edge. `None` inherits from `theme(closed=...)` |
 
----
-
-## Reference lines
+#### Reference lines (`add_rule`)
 
 `add_rule()` builds a horizontal or vertical `mark_rule` layer. Compose it with the main chart using `+`.
 
@@ -596,9 +589,7 @@ chart = base + ds.add_rule(10, axis="x", label="t₀", labelPosition="left")
 | `opacity` | `1.0` | Line opacity |
 | `fontSize` | `None` | Label font size; `None` inherits from theme |
 
----
-
-## Text annotations
+#### Text annotations (`add_text`)
 
 `add_text()` places one or more text annotations at arbitrary positions within a chart. Compose it with the main chart using `+`.
 
@@ -635,9 +626,7 @@ The `x` and `y` parameters accept three forms: a `float`/`int` for quantitative 
 | `font` | `None` | Font family name (e.g. `"sans-serif"`, `"Georgia"`); `None` inherits from theme |
 | `opacity` | `1.0` | Text opacity |
 
----
-
-## Non-linear axes
+### Non-linear axes
 
 `add_log_ticks()` and `add_pow_ticks()` add unlabeled minor ticks to log- and power-scaled axes respectively. Both wrap your chart in a layer with an invisible second axis — your chart's data, scale domain, and axis labels are unaffected. Both work with `alt.Chart`, `alt.LayerChart`, and any chart type composable with `alt.layer()`, including `hconcat` and `vconcat` layouts.
 
@@ -645,7 +634,7 @@ The `x` and `y` parameters accept three forms: a `float`/`int` for quantitative 
 
 ![Nonlinear scale example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/nonlinear_example_light.png)
 
-### `log_label_expr()`
+#### Axis label reformatting (`log_label_expr`)
 
 `log_label_expr()` returns a Vega `labelExpr` string for typeset log-scale axis labels. Two notations are available:
 
@@ -681,11 +670,9 @@ Supports exponents up to ±99, covering all practical scientific and computing r
 | `base` | `10` | Logarithm base matching the axis scale |
 | `notation` | `"power"` | `"power"` or `"scientific"`. `"scientific"` requires `base=10` |
 
----
+#### Minor ticks (`add_log_ticks` and `add_pow_ticks`)
 
-### `add_log_ticks()`
-
-**Base 10** places ticks at the conventional 2×–9× integer multiples within each decade (8 minor ticks per decade, fixed). **Base 2** places `nMinor` equally-spaced ticks per octave in log space — default `nMinor=1` gives one tick at the geometric midpoint (√2 × 2ⁿ). Other integer bases also work using the same equal-spacing rule.
+**`add_log_ticks()`** — **Base 10** places ticks at the conventional 2×–9× integer multiples within each decade (8 minor ticks per decade, fixed). **Base 2** places `nMinor` equally-spaced ticks per octave in log space — default `nMinor=1` gives one tick at the geometric midpoint (√2 × 2ⁿ). Other integer bases also work using the same equal-spacing rule.
 
 ```python
 # log10 y-axis — exp range auto-derived from data
@@ -742,9 +729,7 @@ The `expMin` / `expMax` parameters are auto-derived from `df[field].min()` / `.m
 | `yExpMin`, `yExpMax` | auto | Exponent overrides for y axis (`axis='both'` only) |
 | `minorTickSize` | `tickSize / 2` | Minor tick length in pixels; defaults to half the active theme's `tickSize` (typically `1.5` at the default `tickSize=3`) |
 
-### `add_pow_ticks()`
-
-`add_pow_ticks()` adds minor ticks to a power- or sqrt-scale axis. Unlike `add_log_ticks()`, `majorValues` is required — it must match the `values=` passed to the main chart's `alt.Axis` so the minor tick layer can compute interval boundaries. Minor ticks are placed at positions equally spaced in the power-transformed (visual) space: tick `k` of `nMinor` between major ticks `a` and `b` falls at `(a**exp + k/(nMinor+1) * (b**exp − a**exp))**(1/exp)`.
+**`add_pow_ticks()`** adds minor ticks to a power- or sqrt-scale axis. Unlike `add_log_ticks()`, `majorValues` is required — it must match the `values=` passed to the main chart's `alt.Axis` so the minor tick layer can compute interval boundaries. Minor ticks are placed at positions equally spaced in the power-transformed (visual) space: tick `k` of `nMinor` between major ticks `a` and `b` falls at `(a**exp + k/(nMinor+1) * (b**exp − a**exp))**(1/exp)`.
 
 A useful convention for choosing major ticks on a sqrt axis: pick values whose square roots are evenly spaced. For example, `[0.25, 1.0, 2.25, 4.0]` gives `√L = 0.5, 1.0, 1.5, 2.0` — equal visual spacing.
 
