@@ -15,6 +15,7 @@ import altair as alt
 import numpy as np
 import polars as pl
 import vl_convert as vlc
+from typing import Any
 
 import dysonsphere as ds
 from dysonsphere.export import _fix_tick_alignment
@@ -78,7 +79,7 @@ groups = {
     "Condition 2": [True, True, True, True, True, True],
 }
 
-title_params = dict(orient="top", anchor="start", offset=4)
+title_params: dict[str, Any] = dict(orient="top", anchor="start", offset=4)
 fontSize = alt.theme.options.get("fontSize", 7)
 
 plot = ds.add_multilabel(

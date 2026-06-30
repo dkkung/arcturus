@@ -10,6 +10,7 @@ Usage (from project root):
 
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import altair as alt
 import numpy as np
@@ -49,80 +50,74 @@ time_df = pl.DataFrame(
     }
 )
 
+title_params: dict[str, Any] = dict(orient="top", anchor="start", offset=4)
 
-def build_reference_line_example():
-    title_params = dict(orient="top", anchor="start", offset=4)
+# ── Left: strip chart with horizontal reference lines ─────────────────────
+ds.theme(palette="blues2", chartWidth=120, chartHeight=110)
+fontSize = alt.theme.options.get("fontSize", 7)
 
-    # ── Left: strip chart with horizontal reference lines ─────────────────────
-    ds.theme(palette="blues2", chartWidth=120, chartHeight=110)
-    fontSize = alt.theme.options.get("fontSize", 7)
-
-    strip = ds.mark_strip(strip_df, "group", "value", GROUPS, yTitle="Measurement")
-    left = (
-        strip
-        + ds.add_rule(4.0, label="Lower limit", labelPosition="bottom")
-        + ds.add_rule(7.0, label="Upper limit", labelAlign="right")
-    ).properties(
-        title=alt.TitleParams(
-            [
-                'add_rule(4.0, label="Lower limit", labelPosition="bottom")',
-                'add_rule(7.0, label="Upper limit", labelAlign="right")',
-            ],
-            fontSize=fontSize,
-            **title_params,
-        )
+strip = ds.mark_strip(strip_df, "group", "value", GROUPS, yTitle="Measurement")
+left = (
+    strip
+    + ds.add_rule(4.0, label="Lower limit", labelPosition="bottom")
+    + ds.add_rule(7.0, label="Upper limit", labelAlign="right")
+).properties(
+    title=alt.TitleParams(
+        [
+            'add_rule(4.0, label="Lower limit", labelPosition="bottom")',
+            'add_rule(7.0, label="Upper limit", labelAlign="right")',
+        ],
+        fontSize=fontSize,
+        **title_params,
     )
+)
 
-    # ── Right: time series with vertical reference line ───────────────────────
-    ds.theme(palette="blues2", chartWidth=120, chartHeight=100)
+# ── Right: time series with vertical reference line ───────────────────────
+ds.theme(palette="blues2", chartWidth=120, chartHeight=100)
 
-    lines = (
-        alt.Chart(time_df)
-        .mark_line()
-        .encode(
-            x=alt.X("time:Q", title=None),
-            y=alt.Y("value:Q", title=None),
-            color=alt.Color(
-                "series:N",
-                sort=SERIES,
-                title=None,
-                scale=alt.Scale(range=[ds.palette("blues2")[2], ds.palette("blues2")[7]]),
-            ),
-        )
+lines = (
+    alt.Chart(time_df)
+    .mark_line()
+    .encode(
+        x=alt.X("time:Q", title=None),
+        y=alt.Y("value:Q", title=None),
+        color=alt.Color(
+            "series:N",
+            sort=SERIES,
+            title=None,
+            scale=alt.Scale(range=[ds.palette("blues2")[2], ds.palette("blues2")[7]]),
+        ),
     )
-    right = (
-        lines
-        + ds.add_rule(
-            10, axis="x", label="Intervention", labelPosition="right", labelAlign="bottom"
-        )
-    ).properties(
-        title=alt.TitleParams(
-            [
-                'add_rule(10, axis="x", label="Intervention",',
-                'labelPosition="right", labelAlign="bottom")',
-            ],
-            fontSize=fontSize,
-            **title_params,
-        )
+)
+right = (
+    lines
+    + ds.add_rule(
+        10, axis="x", label="Intervention", labelPosition="right", labelAlign="bottom"
     )
-
-    chart = alt.hconcat(left, right)
-
-    out_png = ROOT / "docs" / "reference_line_example_light.png"
-    with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
-        tmp_path = tmp.name
-    chart.save(tmp_path)
-    _fix_tick_alignment(
-        tmp_path,
-        band_padding=alt.theme.options.get("bandPadding", 0.1),
-        chart_width=alt.theme.options.get("chartWidth", 100),
+).properties(
+    title=alt.TitleParams(
+        [
+            'add_rule(10, axis="x", label="Intervention",',
+            'labelPosition="right", labelAlign="bottom")',
+        ],
+        fontSize=fontSize,
+        **title_params,
     )
-    with open(tmp_path, encoding="utf-8") as f:
-        svg_content = f.read()
-    Path(tmp_path).unlink()
-    out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
-    print(f"saved {out_png}")
+)
 
+chart = alt.hconcat(left, right)
 
-if __name__ == "__main__":
-    build_reference_line_example()
+out_png = ROOT / "docs" / "reference_line_example_light.png"
+with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
+    tmp_path = tmp.name
+chart.save(tmp_path)
+_fix_tick_alignment(
+    tmp_path,
+    band_padding=alt.theme.options.get("bandPadding", 0.1),
+    chart_width=alt.theme.options.get("chartWidth", 100),
+)
+with open(tmp_path, encoding="utf-8") as f:
+    svg_content = f.read()
+Path(tmp_path).unlink()
+out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
+print(f"saved {out_png}")

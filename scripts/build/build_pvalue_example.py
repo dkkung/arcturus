@@ -10,6 +10,7 @@ Usage (from project root):
 
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import altair as alt
 import numpy as np
@@ -30,9 +31,9 @@ df = pl.DataFrame(
         "group": [CATEGORIES[0]] * 40 + [CATEGORIES[1]] * 40 + [CATEGORIES[2]] * 40,
         "value": np.concatenate(
             [
-                rng.normal(1.0, 0.35, 40),  # A
-                rng.normal(2.2, 0.45, 40),  # B — clearly different from A (***)
-                rng.normal(1.15, 0.4, 40),  # C — barely different from A (ns)
+                rng.normal(1.0, 0.35, 40),
+                rng.normal(2.2, 0.45, 40),
+                rng.normal(1.15, 0.4, 40),
             ]
         ),
     }
@@ -53,94 +54,88 @@ third_df = pl.DataFrame(
     }
 )
 
+ds.theme(palette="blues2", chartWidth=75, markSize=13, legend=False)
 
-def build_pvalue_example():
-    ds.theme(palette="blues2", chartWidth=75, markSize=13, legend=False)
+x = alt.X("group:N", sort=CATEGORIES, title=None)
 
-    x = alt.X("group:N", sort=CATEGORIES, title=None)
+left_base = (
+    alt.Chart(df)
+    .mark_boxplot(color=ds.palette("blues")[0])
+    .encode(x=x, y=alt.Y("value:Q", title=None), color=alt.Color("group:N"))
+)
+right_base = (
+    alt.Chart(df)
+    .mark_boxplot(color=ds.palette("blues")[0])
+    .encode(x=x, y=alt.Y("value:Q", title=None), color=alt.Color("group:N"))
+)
 
-    left_base = (
-        alt.Chart(df)
-        .mark_boxplot(color=ds.palette("blues")[0])
-        .encode(x=x, y=alt.Y("value:Q", title=None), color=alt.Color("group:N"))
+pvalue_kwargs: dict[str, Any] = dict(
+    df=df,
+    xCol="group",
+    yCol="value",
+    pairs=PAIRS,
+    categories=CATEGORIES,
+    yPad=0.25,
+    yStep=0.6,
+)
+
+title_params: dict[str, Any] = dict(orient="top", anchor="start", offset=4)
+fontSize = alt.theme.options.get("fontSize", 7)
+
+left = (left_base + ds.add_pvalue(**pvalue_kwargs, labelStyle="p")).properties(
+    title=alt.TitleParams(
+        ['labelStyle="p"', 'bracketStyle="line"'], fontSize=fontSize, **title_params
     )
-    right_base = (
-        alt.Chart(df)
-        .mark_boxplot(color=ds.palette("blues")[0])
-        .encode(x=x, y=alt.Y("value:Q", title=None), color=alt.Color("group:N"))
+)
+right = (
+    right_base + ds.add_pvalue(**pvalue_kwargs, labelStyle="asterisks", bracketStyle="bracket")
+).properties(
+    title=alt.TitleParams(
+        ['labelStyle="asterisks"', 'bracketStyle="bracket"'], fontSize=fontSize, **title_params
     )
+)
 
-    pvalue_kwargs = dict(
-        df=df,
-        xCol="group",
-        yCol="value",
-        pairs=PAIRS,
-        categories=CATEGORIES,
-        yPad=0.25,
-        yStep=0.6,
+third_x = alt.X("group:N", sort=THIRD_CATEGORIES, title=None)
+third_base = (
+    alt.Chart(third_df)
+    .mark_boxplot(color=ds.palette("blues")[0])
+    .encode(x=third_x, y=alt.Y("value:Q", title=None), color=alt.Color("group:N"))
+)
+third = (
+    third_base
+    + ds.add_pvalue(
+        third_df,
+        "group",
+        "value",
+        pairs=[("A", "B")],
+        categories=THIRD_CATEGORIES,
+        bracketStyle="bracket",
+        yStart=float(third_df["value"].min()) - 0.25,  # ty: ignore[invalid-argument-type]
+        yStep=-0.5,
+        tickHeight=0.15,
+        reverse=[("A", "B")],
     )
-
-    title_params = dict(orient="top", anchor="start", offset=4)
-    fontSize = alt.theme.options.get("fontSize", 7)
-
-    left = (left_base + ds.add_pvalue(**pvalue_kwargs, labelStyle="p")).properties(
-        title=alt.TitleParams(
-            ['labelStyle="p"', 'bracketStyle="line"'], fontSize=fontSize, **title_params
-        )
+).properties(
+    title=alt.TitleParams(
+        ['bracketStyle="bracket"', 'reverse=[("A", "B")]'],
+        fontSize=fontSize,
+        **title_params,
     )
-    right = (
-        right_base + ds.add_pvalue(**pvalue_kwargs, labelStyle="asterisks", bracketStyle="bracket")
-    ).properties(
-        title=alt.TitleParams(
-            ['labelStyle="asterisks"', 'bracketStyle="bracket"'], fontSize=fontSize, **title_params
-        )
-    )
+)
 
-    third_x = alt.X("group:N", sort=THIRD_CATEGORIES, title=None)
-    third_base = (
-        alt.Chart(third_df)
-        .mark_boxplot(color=ds.palette("blues")[0])
-        .encode(x=third_x, y=alt.Y("value:Q", title=None), color=alt.Color("group:N"))
-    )
-    third = (
-        third_base
-        + ds.add_pvalue(
-            third_df,
-            "group",
-            "value",
-            pairs=[("A", "B")],
-            categories=THIRD_CATEGORIES,
-            bracketStyle="bracket",
-            yStart=float(third_df["value"].min()) - 0.25,
-            yStep=-0.5,
-            tickHeight=0.15,
-            reverse=[("A", "B")],
-        )
-    ).properties(
-        title=alt.TitleParams(
-            ['bracketStyle="bracket"', 'reverse=[("A", "B")]'],
-            fontSize=fontSize,
-            **title_params,
-        )
-    )
+chart = alt.hconcat(left, right, third)
 
-    chart = alt.hconcat(left, right, third)
-
-    out_png = ROOT / "docs" / "pvalue_example_light.png"
-    with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
-        tmp_path = tmp.name
-    chart.save(tmp_path)
-    _fix_tick_alignment(
-        tmp_path,
-        band_padding=alt.theme.options.get("bandPadding", 0.1),
-        chart_width=alt.theme.options.get("chartWidth", 100),
-    )
-    with open(tmp_path, encoding="utf-8") as f:
-        svg_content = f.read()
-    Path(tmp_path).unlink()
-    out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
-    print(f"saved {out_png}")
-
-
-if __name__ == "__main__":
-    build_pvalue_example()
+out_png = ROOT / "docs" / "pvalue_example_light.png"
+with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
+    tmp_path = tmp.name
+chart.save(tmp_path)
+_fix_tick_alignment(
+    tmp_path,
+    band_padding=alt.theme.options.get("bandPadding", 0.1),
+    chart_width=alt.theme.options.get("chartWidth", 100),
+)
+with open(tmp_path, encoding="utf-8") as f:
+    svg_content = f.read()
+Path(tmp_path).unlink()
+out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
+print(f"saved {out_png}")

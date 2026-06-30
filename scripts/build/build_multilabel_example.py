@@ -10,6 +10,7 @@ Usage (from project root):
 
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import altair as alt
 import numpy as np
@@ -51,57 +52,50 @@ SCORES = {
     "Score C": ["5", "12", "8", "20"],
 }
 
+ds.theme(chartFill="white", palette="blues2")
 
-def build_multilabel_example():
-    ds.theme(chartFill="white", palette="blues2")
+chart = ds.mark_strip(df, "group", "value", CATEGORIES, yTitle="Value")
+KWARGS: dict[str, Any] = dict(categories=CATEGORIES, labelAlign="left")
 
-    out_base = str(ROOT / "docs" / "multilabel_example")
 
-    def make_chart() -> alt.HConcatChart:
-        chart = ds.mark_strip(df, "group", "value", CATEGORIES, yTitle="Value")
-        KWARGS = dict(categories=CATEGORIES, labelAlign="left")
-
-        def corner_label(text: str) -> alt.LayerChart:
-            lines = text.split("\n")
-            label = (
-                alt.Chart(alt.Data(values=[{}]))
-                .mark_text(align="left", baseline="top", text=lines if len(lines) > 1 else lines[0])
-                .encode(x=alt.value(4), y=alt.value(4))
-            )
-            return chart + label
-
-        pm = ds.add_multilabel(
-            corner_label('style = "plusminus"'), CONDITIONS, style="plusminus", **KWARGS
-        )
-        dot = ds.add_multilabel(
-            corner_label('style = "symbol"'), CONDITIONS, style="symbol", **KWARGS
-        )
-        txt = ds.add_multilabel(
-            corner_label('showSampleSize = True\nstyle = "text"'),
-            {"Score A": SCORES["Score B"], "Score B": SCORES["Score C"]},
-            style="text",
-            showSampleSize=True,
-            df=df,
-            xCol="group",
-            **KWARGS,
-        )
-        return alt.hconcat(pm, dot, txt)
-
-    out_png = Path(out_base + "_light.png")
-    with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
-        tmp_path = tmp.name
-    make_chart().save(tmp_path)
-    _fix_tick_alignment(
-        tmp_path,
-        band_padding=alt.theme.options.get("bandPadding", 0.1),
-        chart_width=alt.theme.options.get("chartWidth", 100),
+def corner_label(base: alt.LayerChart, text: str) -> alt.LayerChart:
+    lines = text.split("\n")
+    label = (
+        alt.Chart(alt.Data(values=[{}]))
+        .mark_text(align="left", baseline="top", text=lines if len(lines) > 1 else lines[0])
+        .encode(x=alt.value(4), y=alt.value(4))
     )
-    with open(tmp_path, encoding="utf-8") as f:
-        svg_content = f.read()
-    Path(tmp_path).unlink()
-    out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
-    print(f"saved {out_png}")
+    return base + label
 
 
-if __name__ == "__main__":
-    build_multilabel_example()
+pm = ds.add_multilabel(
+    corner_label(chart, 'style = "plusminus"'), CONDITIONS, style="plusminus", **KWARGS
+)
+dot = ds.add_multilabel(
+    corner_label(chart, 'style = "symbol"'), CONDITIONS, style="symbol", **KWARGS
+)
+txt = ds.add_multilabel(
+    corner_label(chart, 'showSampleSize = True\nstyle = "text"'),
+    {"Score A": SCORES["Score B"], "Score B": SCORES["Score C"]},
+    style="text",
+    showSampleSize=True,
+    df=df,
+    xCol="group",
+    **KWARGS,
+)
+combined = alt.hconcat(pm, dot, txt)
+
+out_png = ROOT / "docs" / "multilabel_example_light.png"
+with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
+    tmp_path = tmp.name
+combined.save(tmp_path)
+_fix_tick_alignment(
+    tmp_path,
+    band_padding=alt.theme.options.get("bandPadding", 0.1),
+    chart_width=alt.theme.options.get("chartWidth", 100),
+)
+with open(tmp_path, encoding="utf-8") as f:
+    svg_content = f.read()
+Path(tmp_path).unlink()
+out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
+print(f"saved {out_png}")

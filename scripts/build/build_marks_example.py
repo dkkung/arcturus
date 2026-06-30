@@ -16,6 +16,7 @@ import altair as alt
 import numpy as np
 import polars as pl
 import vl_convert as vlc
+from typing import Any
 
 import dysonsphere as ds
 from dysonsphere.export import _fix_tick_alignment
@@ -43,7 +44,7 @@ df = pl.DataFrame(
 
 ds.theme(chartFill="white", palette="blues2", legend=False)
 
-title_params = dict(orient="top", anchor="start", offset=4)
+title_params: dict[str, Any] = dict(orient="top", anchor="start", offset=4)
 fontSize = alt.theme.options.get("fontSize", 7)
 palette = ds.palette("blues2", n=len(CATEGORIES))
 

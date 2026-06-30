@@ -12,6 +12,7 @@ Usage (from project root):
 
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import altair as alt
 import numpy as np
@@ -47,103 +48,97 @@ _x = rng.uniform(0, 10, _n)
 _y = (_x * 0.9 + rng.normal(0, 1.0, _n)).clip(0, 10)
 scatter_df = pl.DataFrame({"x": _x.tolist(), "y": _y.tolist()})
 
+ds.theme(palette="blues2", chartWidth=100, legend=False)
 
-def build_shade_example():
-    ds.theme(palette="blues2", chartWidth=100, legend=False)
+title_params: dict[str, Any] = dict(orient="top", anchor="start", offset=4)
+fontSize = alt.theme.options.get("fontSize", 7)
 
-    title_params = dict(orient="top", anchor="start", offset=4)
-    fontSize = alt.theme.options.get("fontSize", 7)
-
-    # ── Left: boxplot, band mode with default add_shade() ─────────────────────
-    shade_left = ds.add_shade(CATEGORIES, "group")
-    boxplot = (
-        alt.Chart(box_df)
-        .mark_boxplot()
-        .encode(
-            x=alt.X("group:N", sort=CATEGORIES, title=None),
-            y=alt.Y("value:Q", title=None),
-            color=alt.Color(
-                "group:N",
-                sort=CATEGORIES,
-                scale=alt.Scale(range=ds.palette("blues2", n=4)),
-                legend=None,
-            ),
-        )
+# ── Left: boxplot, band mode with default add_shade() ─────────────────────
+shade_left = ds.add_shade(CATEGORIES, "group")
+boxplot = (
+    alt.Chart(box_df)
+    .mark_boxplot()
+    .encode(
+        x=alt.X("group:N", sort=CATEGORIES, title=None),
+        y=alt.Y("value:Q", title=None),
+        color=alt.Color(
+            "group:N",
+            sort=CATEGORIES,
+            scale=alt.Scale(range=ds.palette("blues2", n=4)),
+            legend=None,
+        ),
     )
-    left = (shade_left + boxplot).properties(
-        title=alt.TitleParams(
-            ["Default parameters"],
-            fontSize=fontSize,
-            **title_params,
-        )
+)
+left = (shade_left + boxplot).properties(
+    title=alt.TitleParams(
+        ["Default parameters"],
+        fontSize=fontSize,
+        **title_params,
     )
+)
 
-    # ── Scatter base (shared by middle and right) ──────────────────────────────
-    scatter = (
-        alt.Chart(scatter_df)
-        .mark_point()
-        .encode(
-            x=alt.X("x:Q", title=None, scale=alt.Scale(domain=[0, 10]), axis=alt.Axis(tickCount=5)),
-            y=alt.Y("y:Q", title=None, scale=alt.Scale(domain=[0, 10]), axis=alt.Axis(tickCount=5)),
-            color=alt.Color(
-                "y:Q",
-                scale=alt.Scale(range=ds.palette("blues2"), domain=[0, 10]),
-                legend=None,
-            ),
-        )
+# ── Scatter base (shared by middle and right) ──────────────────────────────
+scatter = (
+    alt.Chart(scatter_df)
+    .mark_point()
+    .encode(
+        x=alt.X("x:Q", title=None, scale=alt.Scale(domain=[0, 10]), axis=alt.Axis(tickCount=5)),
+        y=alt.Y("y:Q", title=None, scale=alt.Scale(domain=[0, 10]), axis=alt.Axis(tickCount=5)),
+        color=alt.Color(
+            "y:Q",
+            scale=alt.Scale(range=ds.palette("blues2"), domain=[0, 10]),
+            legend=None,
+        ),
     )
+)
 
-    # ── Middle: axis='y', top-quarter shade, no stroke ─────────────────────────
-    shade_mid = ds.add_shade(
-        positions=[(7.5, 10.0)],
-        axis="y",
-        palette=[ds.palette("blues")[0]],
+# ── Middle: axis='y', top-quarter shade, no stroke ─────────────────────────
+shade_mid = ds.add_shade(
+    positions=[(7.5, 10.0)],
+    axis="y",
+    palette=[ds.palette("blues")[0]],
+)
+mid = (shade_mid + scatter).properties(
+    title=alt.TitleParams(
+        ['axis="y"', "positions=[(7.5, 10.0)]"],
+        fontSize=fontSize,
+        **title_params,
     )
-    mid = (shade_mid + scatter).properties(
-        title=alt.TitleParams(
-            ['axis="y"', "positions=[(7.5, 10.0)]"],
-            fontSize=fontSize,
-            **title_params,
-        )
+)
+
+# ── Right: axis='both', top-right corner ──────────────────────────────────
+shade_right = ds.add_shade(
+    positions=[((7.5, 10.0), (7.5, 10.0))],
+    axis="both",
+    palette=[ds.palette("blues")[0]],
+    stroke=True,
+    strokeDash=True,
+)
+right = (shade_right + scatter).properties(
+    title=alt.TitleParams(
+        [
+            'axis="both"',
+            "positions=[((7.5, 10.0), (7.5, 10.0))]",
+            "stroke=True, strokeDash=True",
+        ],
+        fontSize=fontSize,
+        **title_params,
     )
+)
 
-    # ── Right: axis='both', top-right corner ──────────────────────────────────
-    shade_right = ds.add_shade(
-        positions=[((7.5, 10.0), (7.5, 10.0))],
-        axis="both",
-        palette=[ds.palette("blues")[0]],
-        stroke=True,
-        strokeDash=True,
-    )
-    right = (shade_right + scatter).properties(
-        title=alt.TitleParams(
-            [
-                'axis="both"',
-                "positions=[((7.5, 10.0), (7.5, 10.0))]",
-                "stroke=True, strokeDash=True",
-            ],
-            fontSize=fontSize,
-            **title_params,
-        )
-    )
+chart = alt.hconcat(left, mid, right)
 
-    chart = alt.hconcat(left, mid, right)
-
-    out_png = ROOT / "docs" / "shade_example_light.png"
-    with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
-        tmp_path = tmp.name
-    chart.save(tmp_path)
-    _fix_tick_alignment(
-        tmp_path,
-        band_padding=alt.theme.options.get("bandPadding", 0.1),
-        chart_width=alt.theme.options.get("chartWidth", 100),
-    )
-    with open(tmp_path, encoding="utf-8") as f:
-        svg_content = f.read()
-    Path(tmp_path).unlink()
-    out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
-    print(f"saved {out_png}")
-
-
-if __name__ == "__main__":
-    build_shade_example()
+out_png = ROOT / "docs" / "shade_example_light.png"
+with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
+    tmp_path = tmp.name
+chart.save(tmp_path)
+_fix_tick_alignment(
+    tmp_path,
+    band_padding=alt.theme.options.get("bandPadding", 0.1),
+    chart_width=alt.theme.options.get("chartWidth", 100),
+)
+with open(tmp_path, encoding="utf-8") as f:
+    svg_content = f.read()
+Path(tmp_path).unlink()
+out_png.write_bytes(vlc.svg_to_png(svg_content, ppi=1200))
+print(f"saved {out_png}")
