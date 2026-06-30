@@ -24,12 +24,8 @@ chart = (
     alt.Chart(df)
     .mark_rect()
     .encode(
-        x=alt.X(
-            "x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")
-        ),
-        y=alt.Y(
-            "y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")
-        ),
+        x=alt.X("x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+        y=alt.Y("y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
         color=alt.Color("count()", title=None),
     )
 )

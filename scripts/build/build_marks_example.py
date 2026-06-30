@@ -46,20 +46,12 @@ title_params: dict[str, Any] = dict(orient="top", anchor="start", offset=4)
 fontSize = alt.theme.options.get("fontSize", 7)
 palette = ds.palette("blues2", n=len(CATEGORIES))
 
-left = ds.mark_strip(
-    df, "group", "value", CATEGORIES, palette=palette, yTitle=None
-).properties(
-    title=alt.TitleParams(
-        ["mark_strip(df, xCol, yCol, categories)"], fontSize=fontSize, **title_params
-    )
+left = ds.mark_strip(df, "group", "value", CATEGORIES, palette=palette, yTitle=None).properties(
+    title=alt.TitleParams(["mark_strip(df, xCol, yCol, categories)"], fontSize=fontSize, **title_params)
 )
 
-right = ds.mark_violin(
-    df, "group", "value", CATEGORIES, palette=palette, yTitle=None
-).properties(
-    title=alt.TitleParams(
-        ["mark_violin(df, xCol, yCol, categories)"], fontSize=fontSize, **title_params
-    )
+right = ds.mark_violin(df, "group", "value", CATEGORIES, palette=palette, yTitle=None).properties(
+    title=alt.TitleParams(["mark_violin(df, xCol, yCol, categories)"], fontSize=fontSize, **title_params)
 )
 
 chart = alt.hconcat(left, right).resolve_scale(y="shared")

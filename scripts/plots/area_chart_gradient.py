@@ -34,9 +34,7 @@ area = (
     .mark_area(
         fill={
             "gradient": "linear",
-            "stops": [
-                {"offset": i / 9, "color": c} for i, c in enumerate(palette[::-1])
-            ],
+            "stops": [{"offset": i / 9, "color": c} for i, c in enumerate(palette[::-1])],
             "x1": 0,
             "y1": 0,
             "x2": 0,

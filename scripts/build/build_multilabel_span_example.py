@@ -26,14 +26,7 @@ rng = np.random.default_rng(42)
 
 df = pl.DataFrame(
     {
-        "group": (
-            ["A"] * 200
-            + ["B"] * 200
-            + ["C"] * 200
-            + ["D"] * 200
-            + ["E"] * 200
-            + ["F"] * 200
-        ),
+        "group": (["A"] * 200 + ["B"] * 200 + ["C"] * 200 + ["D"] * 200 + ["E"] * 200 + ["F"] * 200),
         "value": np.concatenate(
             [
                 rng.normal(10, 2, 200),
@@ -65,9 +58,7 @@ base = alt.Chart(df).encode(
 )
 
 boxplot = base.mark_boxplot().encode(
-    color=alt.Color(
-        "group:N", sort=CATEGORIES, scale=alt.Scale(range=palette), legend=None
-    ),
+    color=alt.Color("group:N", sort=CATEGORIES, scale=alt.Scale(range=palette), legend=None),
 )
 
 points = base.mark_circle().encode(

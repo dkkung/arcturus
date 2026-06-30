@@ -106,9 +106,7 @@ class TestExportSwatches:
         from dysonsphere.palettes import export_swatches
 
         export_swatches(tmp_path)
-        content = (
-            tmp_path / "import_dysonsphere_palettes_to_illustrator.jsx"
-        ).read_text()
+        content = (tmp_path / "import_dysonsphere_palettes_to_illustrator.jsx").read_text()
         assert '"blues"' in content
         assert '"reds"' in content
 

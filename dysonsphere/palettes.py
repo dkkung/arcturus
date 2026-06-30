@@ -4755,9 +4755,7 @@ def export_swatches(directory: str | Path | None = None) -> None:
     To use: in Illustrator, go to File > Scripts > Other Script... and select the
     generated .jsx file.
     """
-    dest = (
-        Path(directory) if directory is not None else Path.cwd()
-    ) / "import_dysonsphere_palettes_to_illustrator.jsx"
+    dest = (Path(directory) if directory is not None else Path.cwd()) / "import_dysonsphere_palettes_to_illustrator.jsx"
 
     js_palettes = json.dumps(colors, indent=4)
 

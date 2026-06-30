@@ -47,9 +47,7 @@ base = alt.Chart(df).encode(
 )
 
 boxplot = base.mark_boxplot().encode(
-    color=alt.Color(
-        "group:N", sort=CATEGORIES, scale=alt.Scale(range=palette), legend=None
-    ),
+    color=alt.Color("group:N", sort=CATEGORIES, scale=alt.Scale(range=palette), legend=None),
 )
 
 points = base.mark_circle().encode(

@@ -12,57 +12,39 @@ def default_theme():
 
 class TestRuleMarkKwargs:
     def test_opacity_always_present(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=None, strokeDash=None, opacity=0.5
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=None, strokeDash=None, opacity=0.5)
         assert kwargs["opacity"] == pytest.approx(0.5)
 
     def test_color_none_omitted(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=None, strokeDash=None, opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=None, strokeDash=None, opacity=1.0)
         assert "color" not in kwargs
 
     def test_color_set(self):
-        kwargs = _rule_mark_kwargs(
-            color="red", strokeWidth=None, strokeDash=None, opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color="red", strokeWidth=None, strokeDash=None, opacity=1.0)
         assert kwargs["color"] == "red"
 
     def test_stroke_width_none_omitted(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=None, strokeDash=None, opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=None, strokeDash=None, opacity=1.0)
         assert "strokeWidth" not in kwargs
 
     def test_stroke_width_set(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=2.0, strokeDash=None, opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=2.0, strokeDash=None, opacity=1.0)
         assert kwargs["strokeWidth"] == pytest.approx(2.0)
 
     def test_stroke_dash_none_omitted(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=None, strokeDash=None, opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=None, strokeDash=None, opacity=1.0)
         assert "strokeDash" not in kwargs
 
     def test_stroke_dash_false_forces_solid(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=None, strokeDash=False, opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=None, strokeDash=False, opacity=1.0)
         assert kwargs["strokeDash"] == [0, 0]
 
     def test_stroke_dash_true_reads_theme(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=None, strokeDash=True, opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=None, strokeDash=True, opacity=1.0)
         assert kwargs["strokeDash"] == [2, 2]
 
     def test_stroke_dash_list_passthrough(self):
-        kwargs = _rule_mark_kwargs(
-            color=None, strokeWidth=None, strokeDash=[4, 2], opacity=1.0
-        )
+        kwargs = _rule_mark_kwargs(color=None, strokeWidth=None, strokeDash=[4, 2], opacity=1.0)
         assert kwargs["strokeDash"] == [4, 2]
 
 

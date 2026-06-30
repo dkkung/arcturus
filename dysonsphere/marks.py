@@ -188,11 +188,7 @@ def mark_violin(
                 title=None,
                 legend=alt.Legend(symbolType="circle") if legend else None,
                 **(
-                    {
-                        "scale": alt.Scale(
-                            range=palette if isinstance(palette, list) else [palette]
-                        )
-                    }
+                    {"scale": alt.Scale(range=palette if isinstance(palette, list) else [palette])}
                     if palette is not None
                     else {}
                 ),
@@ -214,9 +210,7 @@ def mark_violin(
         )
     )
 
-    return cast(
-        alt.LayerChart, alt.layer(violin, boxplot).resolve_axis(x="independent")
-    )
+    return cast(alt.LayerChart, alt.layer(violin, boxplot).resolve_axis(x="independent"))
 
 
 def mark_strip(
@@ -368,9 +362,7 @@ def mark_strip(
     elif errorbarExtent == "sd":
         error_expr = pl.col(yCol).std().alias("__error")
     else:
-        raise ValueError(
-            f"errorbarExtent must be 'sem' or 'sd', got {errorbarExtent!r}"
-        )
+        raise ValueError(f"errorbarExtent must be 'sem' or 'sd', got {errorbarExtent!r}")
 
     summary = df.group_by(xCol).agg([pl.col(yCol).mean().alias("__mean"), error_expr])
 

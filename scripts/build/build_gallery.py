@@ -46,10 +46,7 @@ def _hex_to_oklab(hx):
 def _de_steps(key):
     hexes = colors[key]
     labs = [_hex_to_oklab(h) for h in hexes]
-    return [
-        math.sqrt(sum((a - b) ** 2 for a, b in zip(labs[i], labs[i + 1])))
-        for i in range(len(labs) - 1)
-    ]
+    return [math.sqrt(sum((a - b) ** 2 for a, b in zip(labs[i], labs[i + 1]))) for i in range(len(labs) - 1)]
 
 
 def _mad_pct(steps):
@@ -374,13 +371,7 @@ _BOX_CATS = ["Group A", "Group B", "Group C", "Group D", "Group E"]
 _box_rng = np.random.default_rng(42)
 _box_raw = pl.DataFrame(
     {
-        "group": (
-            ["Group A"] * 200
-            + ["Group B"] * 200
-            + ["Group C"] * 200
-            + ["Group D"] * 200
-            + ["Group E"] * 200
-        ),
+        "group": (["Group A"] * 200 + ["Group B"] * 200 + ["Group C"] * 200 + ["Group D"] * 200 + ["Group E"] * 200),
         "value": np.concatenate(
             [
                 _box_rng.normal(10, 2, 200),
@@ -427,13 +418,7 @@ _VIOLIN_CATS = ["Group A", "Group B", "Group C", "Group D", "Group E"]
 _violin_rng = np.random.default_rng(42)
 _violin_df = pl.DataFrame(
     {
-        "group": (
-            ["Group A"] * 200
-            + ["Group B"] * 200
-            + ["Group C"] * 200
-            + ["Group D"] * 200
-            + ["Group E"] * 200
-        ),
+        "group": (["Group A"] * 200 + ["Group B"] * 200 + ["Group C"] * 200 + ["Group D"] * 200 + ["Group E"] * 200),
         "value": np.concatenate(
             [
                 _violin_rng.normal(10, 2, 200),
@@ -508,9 +493,7 @@ def _scatter(key):
 def _boxplot(key):
     p = colors[key]
     n = len(p)
-    box_colors = [
-        p[round(i * (n - 1) / (len(_BOX_CATS) - 1))] for i in range(len(_BOX_CATS))
-    ]
+    box_colors = [p[round(i * (n - 1) / (len(_BOX_CATS) - 1))] for i in range(len(_BOX_CATS))]
     x_enc = alt.X(
         "group:N",
         sort=_BOX_CATS,
@@ -533,15 +516,9 @@ def _seq_heatmap(key):
         alt.Chart(_seq_heat_df)
         .mark_rect()
         .encode(
-            x=alt.X(
-                "x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")
-            ),
-            y=alt.Y(
-                "y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")
-            ),
-            color=alt.Color(
-                "mean(z):Q", title=None, scale=alt.Scale(range=p, domain=[0, 1])
-            ),
+            x=alt.X("x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+            y=alt.Y("y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+            color=alt.Color("mean(z):Q", title=None, scale=alt.Scale(range=p, domain=[0, 1])),
             tooltip=alt.Tooltip("mean(z):Q", title="value", format=".2f"),
         )
     )
@@ -553,12 +530,8 @@ def _heatmap(key):
         alt.Chart(_heat_df)
         .mark_rect()
         .encode(
-            x=alt.X(
-                "x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")
-            ),
-            y=alt.Y(
-                "y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")
-            ),
+            x=alt.X("x:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
+            y=alt.Y("y:Q", bin=alt.Bin(maxbins=10), title=None, axis=alt.Axis(format=".0f")),
             color=alt.Color(
                 "mean(z):Q",
                 title=None,
@@ -572,21 +545,14 @@ def _heatmap(key):
 def _area(key):
     p = colors[key]
     n = len(p)
-    palette = [
-        p[round(i * (n - 1) / (len(_AREA_GROUPS) - 1))]
-        for i in range(len(_AREA_GROUPS))
-    ]
+    palette = [p[round(i * (n - 1) / (len(_AREA_GROUPS) - 1))] for i in range(len(_AREA_GROUPS))]
     return (
         alt.Chart(_area_df)
         .mark_area()
         .encode(
             x=alt.X("time:Q", title=None),
-            y=alt.Y(
-                "value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])
-            ),
-            color=alt.Color(
-                "group:N", sort=_AREA_GROUPS, title=None, scale=alt.Scale(range=palette)
-            ),
+            y=alt.Y("value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])),
+            color=alt.Color("group:N", sort=_AREA_GROUPS, title=None, scale=alt.Scale(range=palette)),
             order=alt.Order("group:N", sort="descending"),
         )
     )
@@ -595,19 +561,14 @@ def _area(key):
 def _line(key):
     p = colors[key]
     n = len(p)
-    palette = [
-        p[round(i * (n - 1) / (len(_LINE_GROUPS) - 1))]
-        for i in range(len(_LINE_GROUPS))
-    ]
+    palette = [p[round(i * (n - 1) / (len(_LINE_GROUPS) - 1))] for i in range(len(_LINE_GROUPS))]
     return (
         alt.Chart(_line_df)
         .mark_line()
         .encode(
             x=alt.X("time:Q", title=None),
             y=alt.Y("value:Q", title=None),
-            color=alt.Color(
-                "group:N", sort=_LINE_GROUPS, title=None, scale=alt.Scale(range=palette)
-            ),
+            color=alt.Color("group:N", sort=_LINE_GROUPS, title=None, scale=alt.Scale(range=palette)),
         )
     )
 
@@ -615,10 +576,7 @@ def _line(key):
 def _violin(key):
     p = colors[key]
     n = len(p)
-    palette = [
-        p[round(i * (n - 1) / (len(_VIOLIN_CATS) - 1))]
-        for i in range(len(_VIOLIN_CATS))
-    ]
+    palette = [p[round(i * (n - 1) / (len(_VIOLIN_CATS) - 1))] for i in range(len(_VIOLIN_CATS))]
     return mark_violin(
         _violin_df,
         "group",
@@ -644,12 +602,8 @@ def _stacked_bar(key):
                 title=None,
                 axis=alt.Axis(labelAngle=-45, labelAlign="right"),
             ),
-            y=alt.Y(
-                "value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])
-            ),
-            color=alt.Color(
-                "type:N", sort=_SBAR_TYPES, title=None, scale=alt.Scale(range=palette)
-            ),
+            y=alt.Y("value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])),
+            color=alt.Color("type:N", sort=_SBAR_TYPES, title=None, scale=alt.Scale(range=palette)),
         )
     )
 
@@ -657,10 +611,7 @@ def _stacked_bar(key):
 def _histogram(key):
     p = colors[key]
     n = len(p)
-    palette = [
-        p[round(i * (n - 1) / (len(_HIST_GROUPS) - 1))]
-        for i in range(len(_HIST_GROUPS))
-    ]
+    palette = [p[round(i * (n - 1) / (len(_HIST_GROUPS) - 1))] for i in range(len(_HIST_GROUPS))]
     return (
         alt.Chart(_hist_df)
         .mark_bar(binSpacing=0)
@@ -672,9 +623,7 @@ def _histogram(key):
                 axis=alt.Axis(format=".0f"),
             ),
             y=alt.Y("count()", title=None),
-            color=alt.Color(
-                "group:N", sort=_HIST_GROUPS, title=None, scale=alt.Scale(range=palette)
-            ),
+            color=alt.Color("group:N", sort=_HIST_GROUPS, title=None, scale=alt.Scale(range=palette)),
         )
     )
 
@@ -708,9 +657,7 @@ def _de_sparkline(key):
 
     vir_line = (
         alt.Chart(vir_df)
-        .mark_line(
-            point=alt.OverlayMarkDef(fill="white", stroke="#AAAAAA"), color="#AAAAAA"
-        )
+        .mark_line(point=alt.OverlayMarkDef(fill="white", stroke="#AAAAAA"), color="#AAAAAA")
         .encode(
             x=x_enc,
             y=y_enc,
@@ -773,9 +720,7 @@ def _colorspace(key):
                 scale=alt.Scale(domain=[-0.3, 0.3]),
                 axis=alt.Axis(title="Oklab b", format=".2f"),
             ),
-            color=alt.Color(
-                "hex:N", scale=alt.Scale(domain=domain, range=domain), legend=None
-            ),
+            color=alt.Color("hex:N", scale=alt.Scale(domain=domain, range=domain), legend=None),
             tooltip=[
                 alt.Tooltip("label:N", title="stop"),
                 alt.Tooltip("L:Q", format=".2f"),
@@ -846,9 +791,7 @@ def _build_gallery():
                     continue
                 rows.append(_row(key, bk))
 
-    return alt.vconcat(*rows, spacing=12).resolve_scale(
-        color="independent", opacity="independent"
-    )
+    return alt.vconcat(*rows, spacing=12).resolve_scale(color="independent", opacity="independent")
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────

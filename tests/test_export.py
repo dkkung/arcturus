@@ -69,26 +69,14 @@ def _x_minor_positions(path, minor_size):
 
 
 def _y_tick_svg(major_ys, minor_ys, major_size=5, minor_size=3):
-    lines = [
-        f'  <line transform="translate(0,{y})" x1="0" y1="0" x2="-{major_size}" y2="0"/>'
-        for y in major_ys
-    ]
-    lines += [
-        f'  <line transform="translate(0,{y})" x1="0" y1="0" x2="-{minor_size}" y2="0"/>'
-        for y in minor_ys
-    ]
+    lines = [f'  <line transform="translate(0,{y})" x1="0" y1="0" x2="-{major_size}" y2="0"/>' for y in major_ys]
+    lines += [f'  <line transform="translate(0,{y})" x1="0" y1="0" x2="-{minor_size}" y2="0"/>' for y in minor_ys]
     return f'<svg xmlns="{NS}">\n' + "\n".join(lines) + "\n</svg>"
 
 
 def _x_tick_svg(major_xs, minor_xs, major_size=5, minor_size=3):
-    lines = [
-        f'  <line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="{major_size}"/>'
-        for x in major_xs
-    ]
-    lines += [
-        f'  <line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="{minor_size}"/>'
-        for x in minor_xs
-    ]
+    lines = [f'  <line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="{major_size}"/>' for x in major_xs]
+    lines += [f'  <line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="{minor_size}"/>' for x in minor_xs]
     return f'<svg xmlns="{NS}">\n' + "\n".join(lines) + "\n</svg>"
 
 
@@ -256,9 +244,7 @@ class TestSave:
 
         import altair as alt
 
-        save(
-            simple_chart, str(tmp_path / "out"), saveMetadata=True, background=["light"]
-        )
+        save(simple_chart, str(tmp_path / "out"), saveMetadata=True, background=["light"])
         spec = (tmp_path / "out_vegalite.json").read_text()
         assert f"altair {alt.__version__}" in spec
         assert f"dysonsphere {importlib.metadata.version('dysonsphere')}" in spec
@@ -266,9 +252,7 @@ class TestSave:
         assert "UTC" in spec
 
     def test_save_metadata_in_svg(self, simple_chart, tmp_path):
-        save(
-            simple_chart, str(tmp_path / "out"), saveMetadata=True, background=["light"]
-        )
+        save(simple_chart, str(tmp_path / "out"), saveMetadata=True, background=["light"])
         svg = (tmp_path / "out_light.svg").read_text()
         assert "<desc>" in svg
         assert "altair" in svg
@@ -350,14 +334,9 @@ class TestFixTickAlignment:
         step_pi = W / (n + bp)
         ints0 = [int(step0 * (bp + i + 0.5)) for i in range(n)]
         ints_pi = [int(step_pi * (i + 0.5 + bp / 2)) for i in range(n)]
-        assert ints0 == ints_pi, (
-            "precondition: both cases must floor to same ints for this test"
-        )
+        assert ints0 == ints_pi, "precondition: both cases must floor to same ints for this test"
 
-        lines = "".join(
-            f'<line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="-3"/>'
-            for x in ints0
-        )
+        lines = "".join(f'<line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="-3"/>' for x in ints0)
         svg = f'<svg xmlns="{NS}"><g class="mark-rule role-axis-tick">{lines}</g></svg>'
         path = _write(tmp_path, "t.svg", svg)
         _fix_tick_alignment(path, band_padding=bp, chart_width=W)
@@ -373,21 +352,13 @@ class TestFixTickAlignment:
         step0 = W / (n + 2 * bp)
         ints = [int(step0 * (bp + i + 0.5)) for i in range(n)]  # same for both formulas
 
-        lines = "".join(
-            f'<line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="-3"/>'
-            for x in ints
-        )
+        lines = "".join(f'<line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="-3"/>' for x in ints)
         # Box marks at Case 0 centers: M(center-3),y L(center+3),y ...
         box_marks = "".join(
             f'<path aria-roledescription="box" d="M{step0 * (bp + i + 0.5) - 3},10L{step0 * (bp + i + 0.5) + 3},10"/>'
             for i in range(n)
         )
-        svg = (
-            f'<svg xmlns="{NS}">'
-            f'<g class="mark-rule role-axis-tick">{lines}</g>'
-            f"{box_marks}"
-            f"</svg>"
-        )
+        svg = f'<svg xmlns="{NS}"><g class="mark-rule role-axis-tick">{lines}</g>{box_marks}</svg>'
         path = _write(tmp_path, "t.svg", svg)
         _fix_tick_alignment(path, band_padding=bp, chart_width=W)
         xs = _tick_xs(path)
@@ -402,22 +373,14 @@ class TestFixTickAlignment:
         step_pi = W / (n + bp)
         ints = [int(step_pi * (i + 0.5 + bp / 2)) for i in range(n)]
 
-        lines = "".join(
-            f'<line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="-3"/>'
-            for x in ints
-        )
+        lines = "".join(f'<line transform="translate({x},0)" x1="0" y1="0" x2="0" y2="-3"/>' for x in ints)
         box_marks = "".join(
             f'<path aria-roledescription="box"'
             f' d="M{step_pi * (i + 0.5 + bp / 2) - 3},10'
             f'L{step_pi * (i + 0.5 + bp / 2) + 3},10"/>'
             for i in range(n)
         )
-        svg = (
-            f'<svg xmlns="{NS}">'
-            f'<g class="mark-rule role-axis-tick">{lines}</g>'
-            f"{box_marks}"
-            f"</svg>"
-        )
+        svg = f'<svg xmlns="{NS}"><g class="mark-rule role-axis-tick">{lines}</g>{box_marks}</svg>'
         path = _write(tmp_path, "t.svg", svg)
         _fix_tick_alignment(path, band_padding=bp, chart_width=W)
         xs = _tick_xs(path)
@@ -523,9 +486,7 @@ class TestLayerAxesToFront:
         _layer_axes_to_front(path)
         root = ET.parse(path).getroot()
         paths = list(root.iter(f"{{{NS}}}path"))
-        assert any(
-            p.get("stroke") == "none" for p in paths
-        )  # original → stroke removed
+        assert any(p.get("stroke") == "none" for p in paths)  # original → stroke removed
         assert any(p.get("fill") == "none" for p in paths)  # clone → fill=none
 
 

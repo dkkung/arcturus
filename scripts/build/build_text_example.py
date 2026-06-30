@@ -27,9 +27,7 @@ rng = np.random.default_rng(42)
 df = pl.DataFrame(
     {
         "group": sum([[g] * n for g in GROUPS], []),
-        "value": np.concatenate(
-            [rng.normal(loc, 0.9, n) for loc in [4.0, 4.5, 3.2, 5.4, 8.0, 7.2]]
-        ),
+        "value": np.concatenate([rng.normal(loc, 0.9, n) for loc in [4.0, 4.5, 3.2, 5.4, 8.0, 7.2]]),
     }
 )
 
@@ -62,9 +60,7 @@ multi = {
     "Condition A": [False, True, True, False, False, False],
     "Condition B": [False, False, True, True, True, True],
 }
-annotated = ds.add_multilabel(
-    chart, categories=GROUPS, groups=multi, style="plusminus", categoryLabel=True
-)
+annotated = ds.add_multilabel(chart, categories=GROUPS, groups=multi, style="plusminus", categoryLabel=True)
 
 out_png = ROOT / "docs" / "text_example_light.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:

@@ -16,8 +16,7 @@ from dysonsphere.palettes import colors
 # ── County population (Census Bureau 2020 vintage county estimates) ───────────
 
 _census_url = (
-    "https://www2.census.gov/programs-surveys/popest/"
-    "datasets/2010-2020/counties/totals/co-est2020-alldata.csv"
+    "https://www2.census.gov/programs-surveys/popest/datasets/2010-2020/counties/totals/co-est2020-alldata.csv"
 )
 county_pop = (
     pl.read_csv(_census_url, encoding="latin-1")
@@ -53,9 +52,7 @@ chart = (
     .mark_geoshape(stroke="white", strokeWidth=0.25)
     .transform_lookup(
         lookup="id",
-        from_=alt.LookupData(
-            data=county_pop, key="id", fields=["county", "state", "population"]
-        ),
+        from_=alt.LookupData(data=county_pop, key="id", fields=["county", "state", "population"]),
     )
     .encode(
         color=alt.Color(

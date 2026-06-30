@@ -88,22 +88,12 @@ title_params: dict[str, Any] = dict(orient="top", anchor="start", offset=4)
 fontSize = alt.theme.options.get("fontSize", 7)
 
 left = (left_base + ds.add_pvalue(**pvalue_kwargs, labelStyle="p")).properties(
-    title=alt.TitleParams(
-        ['labelStyle="p"', 'bracketStyle="line"'], fontSize=fontSize, **title_params
-    )
+    title=alt.TitleParams(['labelStyle="p"', 'bracketStyle="line"'], fontSize=fontSize, **title_params)
 )
 scientific = (
-    scientific_base
-    + ds.add_pvalue(**pvalue_kwargs, labelStyle="p", notation="scientific", decimals=2)
-).properties(
-    title=alt.TitleParams(
-        ['labelStyle="p"', 'notation="scientific"'], fontSize=fontSize, **title_params
-    )
-)
-right = (
-    right_base
-    + ds.add_pvalue(**pvalue_kwargs, labelStyle="asterisks", bracketStyle="bracket")
-).properties(
+    scientific_base + ds.add_pvalue(**pvalue_kwargs, labelStyle="p", notation="scientific", decimals=2)
+).properties(title=alt.TitleParams(['labelStyle="p"', 'notation="scientific"'], fontSize=fontSize, **title_params))
+right = (right_base + ds.add_pvalue(**pvalue_kwargs, labelStyle="asterisks", bracketStyle="bracket")).properties(
     title=alt.TitleParams(
         ['labelStyle="asterisks"', 'bracketStyle="bracket"'],
         fontSize=fontSize,

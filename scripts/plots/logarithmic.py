@@ -16,9 +16,7 @@ SLOPES = {"Group A": 2.8, "Group B": -0.8, "Group C": 0.1}
 rows = []
 for group in GROUPS:
     for t in TIMEPOINTS:
-        value = (
-            STARTS[group] * np.exp(SLOPES[group] * (t - 1) / 9) * rng.lognormal(0, 0.15)
-        )
+        value = STARTS[group] * np.exp(SLOPES[group] * (t - 1) / 9) * rng.lognormal(0, 0.15)
         rows.append({"group": group, "time": float(t), "value": float(value)})
 
 df = pl.DataFrame(rows)

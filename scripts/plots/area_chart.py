@@ -37,9 +37,7 @@ chart = (
             stack="normalize",
             scale=alt.Scale(domain=[0, 1]),
         ),
-        color=alt.Color(
-            "group:N", sort=GROUPS, scale=alt.Scale(range=palette), title=None
-        ),
+        color=alt.Color("group:N", sort=GROUPS, scale=alt.Scale(range=palette), title=None),
         order=alt.Order("group:N", sort="descending"),
     )
 )

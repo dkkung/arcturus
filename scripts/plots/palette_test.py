@@ -131,9 +131,7 @@ def make_col(key, label):
 
 def make_row(group, title=""):
     cols = [make_col(k, lbl) for k, lbl in group]
-    return alt.hconcat(*cols, spacing=10, title=title).resolve_scale(
-        color="independent"
-    )
+    return alt.hconcat(*cols, spacing=10, title=title).resolve_scale(color="independent")
 
 
 # ── Compose ────────────────────────────────────────────────────────────────

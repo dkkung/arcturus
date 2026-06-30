@@ -43,9 +43,7 @@ for i, group in enumerate(GROUPS):
                 "draw_order": i,  # Week 1 drawn first (back), Week 6 last (front)
             }
         )
-    label_rows.append(
-        {"group": group, "value": float(x_grid[0]), "baseline": float(baseline)}
-    )
+    label_rows.append({"group": group, "value": float(x_grid[0]), "baseline": float(baseline)})
 
 density_df = pl.DataFrame(density_rows)
 label_df = pl.DataFrame(label_rows)

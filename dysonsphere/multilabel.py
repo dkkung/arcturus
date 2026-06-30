@@ -221,30 +221,20 @@ def _multilabel_layer(
             )
 
     if style not in ("plusminus", "text", "symbol"):
-        raise ValueError(
-            f"style must be 'plusminus', 'text', or 'symbol', got {style!r}"
-        )
+        raise ValueError(f"style must be 'plusminus', 'text', or 'symbol', got {style!r}")
     if labelAlign not in ("left", "right"):
         raise ValueError(f"labelAlign must be 'left' or 'right', got {labelAlign!r}")
     if orientation not in ("vertical", "horizontal"):
-        raise ValueError(
-            f"orientation must be 'vertical' or 'horizontal', got {orientation!r}"
-        )
+        raise ValueError(f"orientation must be 'vertical' or 'horizontal', got {orientation!r}")
     if spanBracketStyle not in ("line", "bracket"):
-        raise ValueError(
-            f"spanBracketStyle must be 'line' or 'bracket', got {spanBracketStyle!r}"
-        )
+        raise ValueError(f"spanBracketStyle must be 'line' or 'bracket', got {spanBracketStyle!r}")
     if spanLabelPosition not in ("top", "bottom"):
-        raise ValueError(
-            f"spanLabelPosition must be 'top' or 'bottom', got {spanLabelPosition!r}"
-        )
+        raise ValueError(f"spanLabelPosition must be 'top' or 'bottom', got {spanLabelPosition!r}")
 
     # Normalise rowStyles to a dict so the rest of the code has a single code path.
     if isinstance(rowStyles, list):
         if len(rowStyles) != len(row_order):
-            raise ValueError(
-                f"rowStyles list has {len(rowStyles)} entries but there are {len(row_order)} rows."
-            )
+            raise ValueError(f"rowStyles list has {len(rowStyles)} entries but there are {len(row_order)} rows.")
         rowStyles = dict(zip(row_order, rowStyles))
 
     # Per-row style resolution: rowStyles overrides global style; non-bool values always
@@ -253,9 +243,7 @@ def _multilabel_layer(
     def _row_style(label: str) -> str:
         s = (rowStyles or {}).get(label, style)
         if s not in ("plusminus", "text", "symbol"):
-            raise ValueError(
-                f"rowStyles[{label!r}] must be 'plusminus', 'text', or 'symbol', got {s!r}"
-            )
+            raise ValueError(f"rowStyles[{label!r}] must be 'plusminus', 'text', or 'symbol', got {s!r}")
         if any(not isinstance(v, bool) for v in groups[label]):
             return "text"
         return s
@@ -282,15 +270,10 @@ def _multilabel_layer(
     extra = 0.0
     if categoryLabel:
         if categoryLabelPosition not in ("top", "bottom"):
-            raise ValueError(
-                f"categoryLabelPosition={categoryLabelPosition!r} is invalid."
-                " Use 'top' or 'bottom'."
-            )
+            raise ValueError(f"categoryLabelPosition={categoryLabelPosition!r} is invalid. Use 'top' or 'bottom'.")
         max_len = max(len(cat) for cat in categories)
         angle_rad = abs(math.radians(categoryLabelAngle))
-        tight_height = fontSize * 0.6 * max_len * math.sin(
-            angle_rad
-        ) + fontSize * math.cos(angle_rad)
+        tight_height = fontSize * 0.6 * max_len * math.sin(angle_rad) + fontSize * math.cos(angle_rad)
         if categoryLabelHeight is None:
             categoryLabelHeight = math.ceil(tight_height)
         k = 0 if categoryLabelPosition == "top" else len(row_order)
@@ -411,12 +394,8 @@ def _multilabel_layer(
         if strokeWidth is None:
             strokeWidth = alt.theme.options.get("markStrokeWidth", 0.25)
 
-        plus_df = marks_df.filter(
-            pl.col("__label").is_in(symbol_rows) & (pl.col("__value") == "+")
-        )
-        minus_df = marks_df.filter(
-            pl.col("__label").is_in(symbol_rows) & (pl.col("__value") == "−")
-        )
+        plus_df = marks_df.filter(pl.col("__label").is_in(symbol_rows) & (pl.col("__value") == "+"))
+        minus_df = marks_df.filter(pl.col("__label").is_in(symbol_rows) & (pl.col("__value") == "−"))
 
         symbol_dy = -fontSize * 0.1
 
@@ -590,12 +569,7 @@ def _multilabel_layer(
             tick_below_h = spanTickHeight if is_bracket_down else 0.0
             label_y = span_y + tick_below_h + label_gap if has_any_label else 0.0
             label_baseline = "top"
-            chart_h = (
-                span_y
-                + tick_below_h
-                + (fontSize + label_gap if has_any_label else 0.0)
-                + 2.0
-            )
+            chart_h = span_y + tick_below_h + (fontSize + label_gap if has_any_label else 0.0) + 2.0
         else:  # top
             label_baseline = "top"
             if has_any_label:
@@ -617,9 +591,7 @@ def _multilabel_layer(
             indices = []
             for cat in span_cats:
                 if cat not in categories:
-                    raise ValueError(
-                        f"span[{span_lbl!r}]: {cat!r} is not in categories"
-                    )
+                    raise ValueError(f"span[{span_lbl!r}]: {cat!r} is not in categories")
                 indices.append(categories.index(cat))
             i_start, i_end = min(indices), max(indices)
 
@@ -630,9 +602,7 @@ def _multilabel_layer(
             # Rule — alt.value() for all positions so no :Q scale is added to the layer
             layers.append(
                 alt.Chart(_one_row)
-                .mark_rule(
-                    color=span_color, strokeWidth=axisWidth_val, strokeDash=[0, 0]
-                )
+                .mark_rule(color=span_color, strokeWidth=axisWidth_val, strokeDash=[0, 0])
                 .encode(x=alt.value(x1), x2=alt.value(x2), y=alt.value(span_y))
             )
 
@@ -688,9 +658,7 @@ def _multilabel_layer(
 
     return cast(
         alt.LayerChart,
-        alt.layer(*layers).properties(
-            width=chartWidth, height=chart_h, view={"fill": None, "stroke": None}
-        ),
+        alt.layer(*layers).properties(width=chartWidth, height=chart_h, view={"fill": None, "stroke": None}),
     )
 
 

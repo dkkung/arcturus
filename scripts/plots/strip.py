@@ -9,13 +9,7 @@ CATEGORIES = ["Control", "Drug A", "Drug B", "Drug C", "Drug D"]
 
 df = pl.DataFrame(
     {
-        "group": (
-            ["Control"] * 50
-            + ["Drug A"] * 50
-            + ["Drug B"] * 50
-            + ["Drug C"] * 50
-            + ["Drug D"] * 50
-        ),
+        "group": (["Control"] * 50 + ["Drug A"] * 50 + ["Drug B"] * 50 + ["Drug C"] * 50 + ["Drug D"] * 50),
         "value": np.concatenate(
             [
                 rng.normal(10, 2, 50),

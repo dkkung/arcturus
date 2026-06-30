@@ -51,17 +51,11 @@ points = (
     )
 )
 
-h_rule = (
-    alt.Chart(alt.Data(values=[{"y": P_THRESH}])).mark_rule().encode(y=alt.Y("y:Q"))
-)
+h_rule = alt.Chart(alt.Data(values=[{"y": P_THRESH}])).mark_rule().encode(y=alt.Y("y:Q"))
 
-v_rule_pos = (
-    alt.Chart(alt.Data(values=[{"x": FC_THRESH}])).mark_rule().encode(x=alt.X("x:Q"))
-)
+v_rule_pos = alt.Chart(alt.Data(values=[{"x": FC_THRESH}])).mark_rule().encode(x=alt.X("x:Q"))
 
-v_rule_neg = (
-    alt.Chart(alt.Data(values=[{"x": -FC_THRESH}])).mark_rule().encode(x=alt.X("x:Q"))
-)
+v_rule_neg = alt.Chart(alt.Data(values=[{"x": -FC_THRESH}])).mark_rule().encode(x=alt.X("x:Q"))
 
 chart = points + h_rule + v_rule_pos + v_rule_neg
 

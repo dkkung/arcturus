@@ -39,9 +39,7 @@ chart = (
             title="Selectivity",
             scale=alt.Scale(range=[20, 500]),
         ),
-        color=alt.Color(
-            "class:N", sort=CLASSES, scale=alt.Scale(range=palette), title=None
-        ),
+        color=alt.Color("class:N", sort=CLASSES, scale=alt.Scale(range=palette), title=None),
     )
 )
 

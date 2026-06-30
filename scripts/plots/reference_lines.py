@@ -22,9 +22,7 @@ n = 20
 df_strip = pl.DataFrame(
     {
         "group": sum([[g] * n for g in GROUPS], []),
-        "value": np.concatenate(
-            [rng.normal(loc, 0.8, n) for loc in [5.5, 4.8, 6.2, 5.1]]
-        ),
+        "value": np.concatenate([rng.normal(loc, 0.8, n) for loc in [5.5, 4.8, 6.2, 5.1]]),
     }
 )
 

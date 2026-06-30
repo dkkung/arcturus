@@ -85,7 +85,5 @@ class TestAddBeeswarm:
         assert len(result) == len(group_df)
 
     def test_custom_column_name(self, group_df):
-        result = add_beeswarm(
-            group_df, yCol="value", groupBy=["group"], outCol="my_swarm"
-        )
+        result = add_beeswarm(group_df, yCol="value", groupBy=["group"], outCol="my_swarm")
         assert "my_swarm" in result.columns

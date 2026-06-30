@@ -133,9 +133,7 @@ def _load_style_overrides(style: str | None) -> dict[str, Any]:
             if section and section in config:
                 unknown = set(config[section]) - set(_BUILTIN_DEFAULTS)
                 if unknown:
-                    raise ValueError(
-                        f"Unknown theme parameter(s) in [{section}] of {path}: {sorted(unknown)}"
-                    )
+                    raise ValueError(f"Unknown theme parameter(s) in [{section}] of {path}: {sorted(unknown)}")
 
         if "default" in config:
             default_cfg.update(config["default"])
@@ -145,9 +143,7 @@ def _load_style_overrides(style: str | None) -> dict[str, Any]:
             style_found_in_config = True
 
     if style is not None and style not in _BUILTIN_STYLES and not style_found_in_config:
-        raise ValueError(
-            f"Style {style!r} not found as preset or any dysonsphere config file."
-        )
+        raise ValueError(f"Style {style!r} not found as preset or any dysonsphere config file.")
 
     merged: dict[str, Any] = {}
     merged.update(default_cfg)
@@ -166,13 +162,9 @@ def _load_custom_palettes() -> dict[str, list[str]]:
         palettes_section = config.get("palettes", {})
         for name, values in palettes_section.items():
             if not isinstance(values, list) or len(values) == 0:
-                raise ValueError(
-                    f"Palette {name!r} in {path} must be a non-empty list of hex strings."
-                )
+                raise ValueError(f"Palette {name!r} in {path} must be a non-empty list of hex strings.")
             if not all(isinstance(v, str) for v in values):
-                raise ValueError(
-                    f"Palette {name!r} in {path} must contain only strings (hex color codes)."
-                )
+                raise ValueError(f"Palette {name!r} in {path} must contain only strings (hex color codes).")
             custom[name] = values
     return custom
 
@@ -190,9 +182,7 @@ def theme(style: str | None = None, **kwargs: Any) -> None:
     """
     unknown = set(kwargs) - set(_BUILTIN_DEFAULTS)
     if unknown:
-        raise TypeError(
-            f"theme() got unexpected keyword argument(s): {sorted(unknown)}"
-        )
+        raise TypeError(f"theme() got unexpected keyword argument(s): {sorted(unknown)}")
 
     # Restore built-in palettes, then layer in any custom palettes from config files.
     colors.clear()
@@ -215,9 +205,7 @@ def theme(style: str | None = None, **kwargs: Any) -> None:
         p["chartFill"] = "white"
 
     palette = p["palette"]
-    p["palette"] = (
-        colors[palette] if palette is not None and palette in colors else palette
-    )
+    p["palette"] = colors[palette] if palette is not None and palette in colors else palette
 
     alt.theme.options = {**p, "tickWidth": p["axisWidth"]}
 
@@ -226,9 +214,7 @@ def theme(style: str | None = None, **kwargs: Any) -> None:
 def _dysonsphere_theme() -> dict[str, Any]:
     opts = alt.theme.options
     return {
-        "background": (
-            None if opts["transparentBackground"] else opts["chartFill"]
-        ),  # background of the entire chart
+        "background": (None if opts["transparentBackground"] else opts["chartFill"]),  # background of the entire chart
         "config": {
             "arc": {
                 "fill": opts["markFill"],
@@ -238,11 +224,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "stroke": opts["markStroke"],
                 "strokeOpacity": opts["markStrokeOpacity"],
                 "strokeWidth": opts["markStrokeWidth"],
-                **(
-                    {"cornerRadius": opts["cornerRadius"]}
-                    if opts["cornerRadius"]
-                    else {}
-                ),
+                **({"cornerRadius": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
             },
             "area": {
                 "fill": opts["markFill"],
@@ -258,9 +240,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "domainWidth": opts["axisWidth"],
                 "grid": opts["grid"],
                 "gridCap": opts["strokeCap"],
-                "gridColor": (
-                    opts["gridColor"] if opts["darkmode"] else opts["gridColor"]
-                ),
+                "gridColor": (opts["gridColor"] if opts["darkmode"] else opts["gridColor"]),
                 "gridDash": opts["dashedWidth"] if opts["dashedGrid"] else [0, 0],
                 "gridOpacity": 1.00,
                 "gridWidth": opts["axisWidth"],
@@ -271,11 +251,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "labelFontWeight": opts["fontWeight"],
                 "offset": 0
                 if opts["closed"]
-                else (
-                    opts["axisOffset"]
-                    if opts["axisOffset"] is not None
-                    else opts["tickSize"]
-                ),
+                else (opts["axisOffset"] if opts["axisOffset"] is not None else opts["tickSize"]),
                 "ticks": opts["ticks"],
                 "tickCap": opts["strokeCap"],
                 "tickColor": "white" if opts["darkmode"] else "black",
@@ -289,13 +265,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
             },
             "axisX": {
                 "domain": opts["xAxis"] and opts["xDomain"],
-                "labelAlign": (
-                    "right"
-                    if opts["xLabelAngle"] < 0
-                    else "left"
-                    if opts["xLabelAngle"] > 0
-                    else "center"
-                ),
+                "labelAlign": ("right" if opts["xLabelAngle"] < 0 else "left" if opts["xLabelAngle"] > 0 else "center"),
                 "labelAngle": opts["xLabelAngle"] % 360,
                 "labels": opts["xLabels"],
                 "ticks": opts["xAxis"] and opts["xTicks"] and opts["ticks"],
@@ -319,13 +289,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
             },
             "axisTop": {
                 "domain": opts["xAxis"] and opts["xDomain"],
-                "labelAlign": (
-                    "left"
-                    if opts["xLabelAngle"] < 0
-                    else "right"
-                    if opts["xLabelAngle"] > 0
-                    else "center"
-                ),
+                "labelAlign": ("left" if opts["xLabelAngle"] < 0 else "right" if opts["xLabelAngle"] > 0 else "center"),
                 "labelAngle": (-opts["xLabelAngle"]) % 360,
                 "labels": opts["xLabels"],
                 "ticks": opts["xAxis"] and opts["xTicks"] and opts["ticks"],
@@ -337,11 +301,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "stroke": opts["markStroke"],
                 "strokeOpacity": opts["markStrokeOpacity"],
                 "strokeWidth": opts["markStrokeWidth"],
-                **(
-                    {"cornerRadiusEnd": opts["cornerRadius"]}
-                    if opts["cornerRadius"]
-                    else {}
-                ),
+                **({"cornerRadiusEnd": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
             },
             "boxplot": {
                 "size": opts["markSize"] * 0.8,
@@ -356,11 +316,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                     "stroke": opts["markStroke"],
                     "strokeOpacity": opts["markStrokeOpacity"],
                     "strokeWidth": opts["markStrokeWidth"],
-                    **(
-                        {"cornerRadius": opts["cornerRadius"]}
-                        if opts["cornerRadius"]
-                        else {}
-                    ),
+                    **({"cornerRadius": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
                 },
                 "median": {
                     "fill": opts["markMedianFill"],
@@ -448,9 +404,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
             },
             "legend": {
                 "disable": not opts["legend"],
-                "offset": opts["legendOffset"]
-                if opts["legendOffset"] is not None
-                else opts["tickSize"],
+                "offset": opts["legendOffset"] if opts["legendOffset"] is not None else opts["tickSize"],
                 "gradientLength": opts["markSize"] * 5,
                 "gradientThickness": opts["markSize"] * 0.5,
                 "gradientOpacity": opts["markFillOpacity"],
@@ -465,9 +419,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "strokeWidth": opts["axisWidth"] if opts["legendStroke"] else 0,
                 "symbolSize": opts["fontSize"] * 6,
                 "symbolStrokeColor": "white" if opts["darkmode"] else "black",
-                "symbolStrokeWidth": opts["markStrokeWidth"]
-                if opts["markStrokeOpacity"] > 0
-                else 0,
+                "symbolStrokeWidth": opts["markStrokeWidth"] if opts["markStrokeOpacity"] > 0 else 0,
                 "titleColor": "white" if opts["darkmode"] else "black",
                 "titleFont": opts["font"],
                 "titleFontSize": opts["fontSize"],
@@ -492,31 +444,11 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "strokeWidth": opts["markStrokeWidth"],
             },
             "range": {
-                "category": {
-                    "scheme": opts["palette"]
-                    if opts.get("palette") is not None
-                    else colors["blues"][::2]
-                },
-                "diverging": {
-                    "scheme": opts["palette"]
-                    if opts.get("palette") is not None
-                    else colors["redsblues"]
-                },
-                "heatmap": {
-                    "scheme": opts["palette"]
-                    if opts.get("palette") is not None
-                    else colors["blues"]
-                },
-                "ordinal": {
-                    "scheme": opts["palette"]
-                    if opts.get("palette") is not None
-                    else colors["blues"]
-                },
-                "ramp": {
-                    "scheme": opts["palette"]
-                    if opts.get("palette") is not None
-                    else colors["blues"]
-                },
+                "category": {"scheme": opts["palette"] if opts.get("palette") is not None else colors["blues"][::2]},
+                "diverging": {"scheme": opts["palette"] if opts.get("palette") is not None else colors["redsblues"]},
+                "heatmap": {"scheme": opts["palette"] if opts.get("palette") is not None else colors["blues"]},
+                "ordinal": {"scheme": opts["palette"] if opts.get("palette") is not None else colors["blues"]},
+                "ramp": {"scheme": opts["palette"] if opts.get("palette") is not None else colors["blues"]},
             },
             "rule": {
                 "color": "white" if opts["darkmode"] else "black",
@@ -537,11 +469,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "stroke": opts["markStroke"],
                 "strokeOpacity": opts["markStrokeOpacity"],
                 "strokeWidth": opts["markStrokeWidth"],
-                **(
-                    {"cornerRadius": opts["cornerRadius"]}
-                    if opts["cornerRadius"]
-                    else {}
-                ),
+                **({"cornerRadius": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
             },
             "square": {
                 "fill": opts["markFill"],
@@ -578,9 +506,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "discreteWidth": opts["chartWidth"],
                 "discreteHeight": opts["chartHeight"],
                 "fill": None if opts["darkmode"] else opts["viewFill"],
-                "stroke": ("white" if opts["darkmode"] else "black")
-                if opts["closed"]
-                else None,
+                "stroke": ("white" if opts["darkmode"] else "black") if opts["closed"] else None,
                 "strokeWidth": opts["axisWidth"],
             },
         },
@@ -593,9 +519,7 @@ def _toml_value(v: Any) -> str:
     return str(v)
 
 
-def create_config(
-    directory: str | Path | None = None, *, persist: bool = False
-) -> None:
+def create_config(directory: str | Path | None = None, *, persist: bool = False) -> None:
     """
     Write a dysonsphere.toml template to *directory* (default: current working directory).
 

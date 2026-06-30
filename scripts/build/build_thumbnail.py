@@ -63,9 +63,7 @@ ROOT = Path(__file__).resolve().parents[2]
 _vol_rng = np.random.default_rng(42)
 _n = 500
 _log2fc = _vol_rng.normal(0, 1.5, _n)
-_neg_log10_p = np.abs(_log2fc) * _vol_rng.exponential(1.2, _n) + _vol_rng.exponential(
-    0.3, _n
-)
+_neg_log10_p = np.abs(_log2fc) * _vol_rng.exponential(1.2, _n) + _vol_rng.exponential(0.3, _n)
 _FC_THRESH = 1.0
 _P_THRESH = 1.3
 _vol_cat = np.where(
@@ -73,9 +71,7 @@ _vol_cat = np.where(
     "Up",
     np.where((_log2fc < -_FC_THRESH) & (_neg_log10_p > _P_THRESH), "Down", "NS"),
 )
-_vol_df = pl.DataFrame(
-    {"log2fc": _log2fc, "neg_log10_p": _neg_log10_p, "category": _vol_cat}
-)
+_vol_df = pl.DataFrame({"log2fc": _log2fc, "neg_log10_p": _neg_log10_p, "category": _vol_cat})
 _VOL_CATS = ["Up", "NS", "Down"]
 
 # ── Thumbnail-specific chart overrides (no angled labels, no legends) ────────
@@ -84,9 +80,7 @@ _VOL_CATS = ["Up", "NS", "Down"]
 def _boxplot_no_angle(key):
     p = colors[key]
     n = len(p)
-    box_colors = [
-        p[round(i * (n - 1) / (len(_BOX_CATS) - 1))] for i in range(len(_BOX_CATS))
-    ]
+    box_colors = [p[round(i * (n - 1) / (len(_BOX_CATS) - 1))] for i in range(len(_BOX_CATS))]
     return (
         alt.Chart(_box_df)
         .mark_boxplot()
@@ -112,12 +106,8 @@ def _stacked_bar_no_angle(key):
         .mark_bar()
         .encode(
             x=alt.X("group:N", sort=_SBAR_GROUPS, title=None),
-            y=alt.Y(
-                "value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])
-            ),
-            color=alt.Color(
-                "type:N", sort=_SBAR_TYPES, title=None, scale=alt.Scale(range=palette)
-            ),
+            y=alt.Y("value:Q", title=None, stack="normalize", scale=alt.Scale(domain=[0, 1])),
+            color=alt.Color("type:N", sort=_SBAR_TYPES, title=None, scale=alt.Scale(range=palette)),
         )
     )
 
@@ -125,10 +115,7 @@ def _stacked_bar_no_angle(key):
 def _violin_no_legend(key):
     p = colors[key]
     n = len(p)
-    palette = [
-        p[round(i * (n - 1) / (len(_VIOLIN_CATS) - 1))]
-        for i in range(len(_VIOLIN_CATS))
-    ]
+    palette = [p[round(i * (n - 1) / (len(_VIOLIN_CATS) - 1))] for i in range(len(_VIOLIN_CATS))]
     return mark_violin(
         _violin_df,
         "group",
@@ -173,10 +160,7 @@ def _volcano(key):
 def _line_no_legend(key):
     p = colors[key]
     n = len(p)
-    palette = [
-        p[round(i * (n - 1) / (len(_LINE_GROUPS) - 1))]
-        for i in range(len(_LINE_GROUPS))
-    ]
+    palette = [p[round(i * (n - 1) / (len(_LINE_GROUPS) - 1))] for i in range(len(_LINE_GROUPS))]
     return (
         alt.Chart(_line_df)
         .mark_line()

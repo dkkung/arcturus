@@ -24,9 +24,7 @@ n = 20
 df = pl.DataFrame(
     {
         "group": sum([[g] * n for g in GROUPS], []),
-        "value": np.concatenate(
-            [rng.normal(loc, 0.9, n) for loc in [5.0, 6.2, 7.8, 5.4]]
-        ),
+        "value": np.concatenate([rng.normal(loc, 0.9, n) for loc in [5.0, 6.2, 7.8, 5.4]]),
     }
 )
 

@@ -96,17 +96,13 @@ class TestThemeRegistration:
 class TestStyleLoading:
     def test_default_block_applied(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[default]\nfontSize = 5\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[default]\nfontSize = 5\n", encoding="utf-8")
         overrides = _load_style_overrides(None)
         assert overrides["fontSize"] == 5
 
     def test_named_style_applied(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[my_style]\nfontSize = 6\naxisWidth = 0.5\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[my_style]\nfontSize = 6\naxisWidth = 0.5\n", encoding="utf-8")
         overrides = _load_style_overrides("my_style")
         assert overrides["fontSize"] == 6
         assert overrides["axisWidth"] == pytest.approx(0.5)
@@ -121,25 +117,19 @@ class TestStyleLoading:
 
     def test_explicit_kwarg_overrides_style(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[my_style]\nfontSize = 6\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[my_style]\nfontSize = 6\n", encoding="utf-8")
         theme(style="my_style", fontSize=9)
         assert alt.theme.options["fontSize"] == 9
 
     def test_missing_style_raises(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[my_style]\nfontSize = 6\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[my_style]\nfontSize = 6\n", encoding="utf-8")
         with pytest.raises(ValueError, match="'missing'"):
             _load_style_overrides("missing")
 
     def test_unknown_toml_key_raises(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[my_style]\nnotAParam = 99\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[my_style]\nnotAParam = 99\n", encoding="utf-8")
         with pytest.raises(ValueError, match="Unknown theme parameter"):
             _load_style_overrides("my_style")
 
@@ -156,9 +146,7 @@ class TestStyleLoading:
 
     def test_config_overrides_builtin_style(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[notebook]\nfontSize = 9\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[notebook]\nfontSize = 9\n", encoding="utf-8")
         overrides = _load_style_overrides("notebook")
         assert overrides["fontSize"] == 9
         assert overrides["chartWidth"] == 900  # from built-in preset
@@ -208,9 +196,7 @@ class TestCustomPalettes:
 
     def test_custom_palette_cleared_on_theme_reset(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            '[palettes]\nmy_pal = ["#ff0000"]\n', encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text('[palettes]\nmy_pal = ["#ff0000"]\n', encoding="utf-8")
         theme()
         from dysonsphere.palettes import colors
 
@@ -221,17 +207,13 @@ class TestCustomPalettes:
 
     def test_empty_palette_raises(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[palettes]\nbad = []\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[palettes]\nbad = []\n", encoding="utf-8")
         with pytest.raises(ValueError, match="non-empty"):
             theme()
 
     def test_non_string_values_raises(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "dysonsphere.toml").write_text(
-            "[palettes]\nbad = [1, 2, 3]\n", encoding="utf-8"
-        )
+        (tmp_path / "dysonsphere.toml").write_text("[palettes]\nbad = [1, 2, 3]\n", encoding="utf-8")
         with pytest.raises(ValueError, match="strings"):
             theme()
 

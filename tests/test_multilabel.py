@@ -53,9 +53,7 @@ class TestSpans:
 
     def test_span_label_position_top(self):
         theme(chartWidth=100)
-        ann = _multilabel_layer(
-            GROUPS, CATS, span={"G1": ["A", "B"]}, spanLabelPosition="top"
-        )
+        ann = _multilabel_layer(GROUPS, CATS, span={"G1": ["A", "B"]}, spanLabelPosition="top")
         assert isinstance(ann, alt.LayerChart)
 
     def test_span_reverse(self):
@@ -101,16 +99,12 @@ class TestSpans:
     def test_invalid_bracket_style_raises(self):
         theme(chartWidth=100)
         with pytest.raises(ValueError, match="spanBracketStyle"):
-            _multilabel_layer(
-                GROUPS, CATS, span={"": ["A", "B"]}, spanBracketStyle="arrow"
-            )
+            _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]}, spanBracketStyle="arrow")
 
     def test_invalid_label_position_raises(self):
         theme(chartWidth=100)
         with pytest.raises(ValueError, match="spanLabelPosition"):
-            _multilabel_layer(
-                GROUPS, CATS, span={"": ["A", "B"]}, spanLabelPosition="left"
-            )
+            _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]}, spanLabelPosition="left")
 
     def test_explicit_span_gap_changes_height(self):
         theme(chartWidth=100)
@@ -120,9 +114,7 @@ class TestSpans:
 
     def test_defer_cat_label_below_spans(self):
         theme(chartWidth=100)
-        no_span = _multilabel_layer(
-            GROUPS, CATS, categoryLabel=True, categoryLabelPosition="bottom"
-        )
+        no_span = _multilabel_layer(GROUPS, CATS, categoryLabel=True, categoryLabelPosition="bottom")
         with_span = _multilabel_layer(
             GROUPS,
             CATS,
@@ -137,11 +129,7 @@ class TestAddMultilabel:
     def test_accepts_plain_chart(self):
         theme(chartWidth=100)
         df = pl.DataFrame({"g": ML_CATS * 5, "v": range(15)})
-        base = (
-            alt.Chart(df)
-            .mark_boxplot()
-            .encode(x=alt.X("g:N", sort=ML_CATS), y=alt.Y("v:Q"))
-        )
+        base = alt.Chart(df).mark_boxplot().encode(x=alt.X("g:N", sort=ML_CATS), y=alt.Y("v:Q"))
         result = add_multilabel(base, ML_GROUPS, categories=ML_CATS)
         assert isinstance(result, alt.VConcatChart)
 

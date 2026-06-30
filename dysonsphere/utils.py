@@ -62,6 +62,4 @@ def ensure_polars(df: pl.DataFrame) -> pl.DataFrame:
         return df
     if type(df).__module__.startswith("pandas"):
         return pl.from_pandas(df)
-    raise TypeError(
-        f"Expected a polars.DataFrame or pandas.DataFrame, got {type(df).__name__}."
-    )
+    raise TypeError(f"Expected a polars.DataFrame or pandas.DataFrame, got {type(df).__name__}.")

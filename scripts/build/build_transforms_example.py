@@ -49,9 +49,7 @@ palette = ds.palette("blues2", n=len(CATEGORIES))
 
 x = alt.X("group:N", sort=CATEGORIES, title=None)
 y = alt.Y("value:Q", title=None)
-color = alt.Color(
-    "group:N", sort=CATEGORIES, scale=alt.Scale(range=palette), legend=None
-)
+color = alt.Color("group:N", sort=CATEGORIES, scale=alt.Scale(range=palette), legend=None)
 
 # -- Left: add_beeswarm() ---------------------------------------------------
 bee_df = ds.add_beeswarm(df, yCol="value", groupBy=["group"])
@@ -60,11 +58,7 @@ left = (
     alt.Chart(bee_df)
     .mark_circle()
     .encode(x=x, y=y, xOffset=alt.XOffset("beeswarm_x:Q"), color=color)
-    .properties(
-        title=alt.TitleParams(
-            ["add_beeswarm(df, ...)"], fontSize=fontSize, **title_params
-        )
-    )
+    .properties(title=alt.TitleParams(["add_beeswarm(df, ...)"], fontSize=fontSize, **title_params))
 )
 
 # -- Right: add_jitter() ----------------------------------------------------
@@ -74,11 +68,7 @@ right = (
     alt.Chart(jit_df)
     .mark_point()
     .encode(x=x, y=y, xOffset=alt.XOffset("jitter_x:Q"), color=color)
-    .properties(
-        title=alt.TitleParams(
-            ["add_jitter(df, spread=4.0)"], fontSize=fontSize, **title_params
-        )
-    )
+    .properties(title=alt.TitleParams(["add_jitter(df, spread=4.0)"], fontSize=fontSize, **title_params))
 )
 
 chart = alt.hconcat(left, right)

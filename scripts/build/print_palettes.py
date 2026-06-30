@@ -243,14 +243,7 @@ def _arc_resample(Ld, ad, bd, n_out, to_hex):
     """Sample n_out stops at equal arc length along a dense (L, a, b) path."""
     arc = [0.0]
     for i in range(1, len(Ld)):
-        arc.append(
-            arc[-1]
-            + math.sqrt(
-                (Ld[i] - Ld[i - 1]) ** 2
-                + (ad[i] - ad[i - 1]) ** 2
-                + (bd[i] - bd[i - 1]) ** 2
-            )
-        )
+        arc.append(arc[-1] + math.sqrt((Ld[i] - Ld[i - 1]) ** 2 + (ad[i] - ad[i - 1]) ** 2 + (bd[i] - bd[i - 1]) ** 2))
     total = arc[-1]
     out, j = [], 0
     for k in range(n_out):
@@ -364,11 +357,7 @@ def build_diverging(
             L = L_dark + (L_center - L_dark) * s
             t = 1 - s  # 1 at dark end → 0 at centre
             # Achromatic endpoints (pure greys) have undefined hue; force C=0.
-            C = (
-                0.0
-                if achromatic
-                else frac * min(max_c(L, h_arm), max_c(L, h_other)) * t
-            )
+            C = 0.0 if achromatic else frac * min(max_c(L, h_arm), max_c(L, h_other)) * t
             Ld.append(L)
             ad.append(C * math.cos(h_arm))
             bd.append(C * math.sin(h_arm))
@@ -377,12 +366,7 @@ def build_diverging(
         arc = [0.0]
         for i in range(1, N_DENSE):
             arc.append(
-                arc[-1]
-                + math.sqrt(
-                    (Ld[i] - Ld[i - 1]) ** 2
-                    + (ad[i] - ad[i - 1]) ** 2
-                    + (bd[i] - bd[i - 1]) ** 2
-                )
+                arc[-1] + math.sqrt((Ld[i] - Ld[i - 1]) ** 2 + (ad[i] - ad[i - 1]) ** 2 + (bd[i] - bd[i - 1]) ** 2)
             )
         total = arc[-1]
         out, j = [], 0
@@ -693,9 +677,7 @@ def main():
     for name, (arm2, arm1) in DIVERG_OKLAB.items():
         _print_palette(f"{name}_sat", build_diverging(arm2, arm1, frac=DIVERG_SAT_FRAC))
 
-    print(
-        "\n# ─── Diverging — '2'-suffix single-hue pairs ──────────────────────────────"
-    )
+    print("\n# ─── Diverging — '2'-suffix single-hue pairs ──────────────────────────────")
     for arm1, arm2 in DIVERG_SEQ2_PAIRS:
         name = arm1.removesuffix("2") + arm2  # e.g. "reds2","blues2" → "redsblues2"
         _print_palette(name, build_diverging(_pal[arm1][7], _pal[arm2][7]))
@@ -706,22 +688,14 @@ def main():
         _, a, b = hex_to_oklab(base[5])
         hue_deg = math.degrees(math.atan2(b, a)) % 360
         frac = 0.0 if name == "greys" else PASTEL_FRAC
-        _print_palette(
-            f"{name}3", build_single_hue(hue_deg, PASTEL_L_LO, PASTEL_L_HI, frac=frac)
-        )
+        _print_palette(f"{name}3", build_single_hue(hue_deg, PASTEL_L_LO, PASTEL_L_HI, frac=frac))
 
-    print(
-        "\n# ─── Diverging — '3'-suffix single-hue pairs (pastel, FRAC=0.35) ────────────"
-    )
+    print("\n# ─── Diverging — '3'-suffix single-hue pairs (pastel, FRAC=0.35) ────────────")
     for arm1, arm2 in DIVERG_SEQ3_PAIRS:
         name = arm1.removesuffix("3") + arm2  # e.g. "reds3","blues3" → "redsblues3"
-        _print_palette(
-            name, build_diverging(_pal[arm1][11], _pal[arm2][11], frac=PASTEL_FRAC)
-        )
+        _print_palette(name, build_diverging(_pal[arm1][11], _pal[arm2][11], frac=PASTEL_FRAC))
 
-    print(
-        "\n# ─── Desaturation ladder example (bluestgrotto → bluergrotto → bluegrotto)"
-    )
+    print("\n# ─── Desaturation ladder example (bluestgrotto → bluergrotto → bluegrotto)")
     base = build_multihue(SEQ_MULTI_OKLAB["bluestgrotto"])
     _print_palette("bluestgrotto", base)
     _print_palette("bluergrotto", desaturate(base, 0.875))

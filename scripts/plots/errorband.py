@@ -37,15 +37,11 @@ band = (
     .encode(
         x=alt.X("time:Q", title="Time (h)"),
         y=alt.Y("value:Q", title="Response (AU)"),
-        color=alt.Color(
-            "group:N", sort=GROUPS, title=None, scale=alt.Scale(range=palette)
-        ),
+        color=alt.Color("group:N", sort=GROUPS, title=None, scale=alt.Scale(range=palette)),
     )
     .mark_errorband(extent="ci")
 )
-line = base.mark_line(strokeWidth=0.75).encode(
-    y=alt.Y("mean(value):Q", title="Response (AU)")
-)
+line = base.mark_line(strokeWidth=0.75).encode(y=alt.Y("mean(value):Q", title="Response (AU)"))
 
 chart = band + line
 

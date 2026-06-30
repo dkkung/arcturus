@@ -32,9 +32,7 @@ n = 20
 strip_df = pl.DataFrame(
     {
         "group": sum([[g] * n for g in GROUPS], []),
-        "value": np.concatenate(
-            [rng.normal(loc, 0.8, n) for loc in [5.5, 4.8, 6.2, 5.1]]
-        ),
+        "value": np.concatenate([rng.normal(loc, 0.8, n) for loc in [5.5, 4.8, 6.2, 5.1]]),
     }
 )
 
@@ -92,10 +90,7 @@ lines = (
     )
 )
 right = (
-    lines
-    + ds.add_rule(
-        10, axis="x", label="Intervention", labelPosition="right", labelAlign="bottom"
-    )
+    lines + ds.add_rule(10, axis="x", label="Intervention", labelPosition="right", labelAlign="bottom")
 ).properties(
     title=alt.TitleParams(
         [

@@ -74,9 +74,7 @@ def log_label_expr(base: int = 10, notation: str = "power") -> str:
         )
     """
     if notation not in ("power", "scientific", "e", "si"):
-        raise ValueError(
-            f"notation must be 'power', 'scientific', 'e', or 'si', got {notation!r}"
-        )
+        raise ValueError(f"notation must be 'power', 'scientific', 'e', or 'si', got {notation!r}")
     if notation != "power" and base != 10:
         raise ValueError(f"notation={notation!r} is only defined for base=10.")
 
@@ -120,16 +118,10 @@ def _log_minor_layer(
     nMinor: int = 1,
 ) -> alt.Chart:
     if base == 10:
-        minor_values = [
-            m * 10**e for e in range(exp_min, exp_max) for m in range(2, 10)
-        ]
+        minor_values = [m * 10**e for e in range(exp_min, exp_max) for m in range(2, 10)]
     else:
         n_divs = nMinor + 1
-        minor_values = [
-            base ** (e + k / n_divs)
-            for e in range(exp_min, exp_max)
-            for k in range(1, n_divs)
-        ]
+        minor_values = [base ** (e + k / n_divs) for e in range(exp_min, exp_max) for k in range(1, n_divs)]
     orient = "bottom" if axis == "x" else "left"
     minor_axis = alt.Axis(
         values=minor_values,
@@ -143,13 +135,9 @@ def _log_minor_layer(
     scale = alt.Scale(type="log", base=base, domain=[base**exp_min, base**exp_max])
     layer = alt.Chart(df).mark_point(opacity=0)
     if axis == "y":
-        return layer.encode(
-            y=alt.Y(f"{field}:Q", title=None, scale=scale, axis=minor_axis)
-        )
+        return layer.encode(y=alt.Y(f"{field}:Q", title=None, scale=scale, axis=minor_axis))
     else:
-        return layer.encode(
-            x=alt.X(f"{field}:Q", title=None, scale=scale, axis=minor_axis)
-        )
+        return layer.encode(x=alt.X(f"{field}:Q", title=None, scale=scale, axis=minor_axis))
 
 
 def _derive_exp(df, field: str, base: int = 10) -> tuple[int, int]:
@@ -275,15 +263,9 @@ def add_log_ticks(
         x_hi = xExpMax if xExpMax is not None else x_hi
         y_lo = yExpMin if yExpMin is not None else y_lo
         y_hi = yExpMax if yExpMax is not None else y_hi
-        x_layer = _log_minor_layer(
-            df, xField, "x", x_lo, x_hi, minorTickSize, base, nMinor
-        )
-        y_layer = _log_minor_layer(
-            df, yField, "y", y_lo, y_hi, minorTickSize, base, nMinor
-        )
-        return alt.layer(chart, x_layer, y_layer).resolve_axis(
-            x="independent", y="independent"
-        )
+        x_layer = _log_minor_layer(df, xField, "x", x_lo, x_hi, minorTickSize, base, nMinor)
+        y_layer = _log_minor_layer(df, yField, "y", y_lo, y_hi, minorTickSize, base, nMinor)
+        return alt.layer(chart, x_layer, y_layer).resolve_axis(x="independent", y="independent")
 
     if field is None:
         raise ValueError(f"field is required when axis='{axis}'.")
@@ -338,13 +320,9 @@ def _pow_minor_layer(
     )
     layer = alt.Chart(df).mark_point(opacity=0)
     if axis == "y":
-        return layer.encode(
-            y=alt.Y(f"{field}:Q", title=None, scale=scale, axis=minor_axis)
-        )
+        return layer.encode(y=alt.Y(f"{field}:Q", title=None, scale=scale, axis=minor_axis))
     else:
-        return layer.encode(
-            x=alt.X(f"{field}:Q", title=None, scale=scale, axis=minor_axis)
-        )
+        return layer.encode(x=alt.X(f"{field}:Q", title=None, scale=scale, axis=minor_axis))
 
 
 def add_pow_ticks(
@@ -483,15 +461,9 @@ def add_pow_ticks(
             raise ValueError("axis='both' requires xMajorValues and yMajorValues.")
         if len(xMajorValues) < 2 or len(yMajorValues) < 2:
             raise ValueError("majorValues must contain at least two values.")
-        x_layer = _pow_minor_layer(
-            df, xField, "x", xMajorValues, minorTickSize, exponent, nMinor
-        )
-        y_layer = _pow_minor_layer(
-            df, yField, "y", yMajorValues, minorTickSize, exponent, nMinor
-        )
-        return alt.layer(chart, x_layer, y_layer).resolve_axis(
-            x="independent", y="independent"
-        )
+        x_layer = _pow_minor_layer(df, xField, "x", xMajorValues, minorTickSize, exponent, nMinor)
+        y_layer = _pow_minor_layer(df, yField, "y", yMajorValues, minorTickSize, exponent, nMinor)
+        return alt.layer(chart, x_layer, y_layer).resolve_axis(x="independent", y="independent")
 
     if field is None:
         raise ValueError(f"field is required when axis='{axis}'.")
@@ -499,9 +471,7 @@ def add_pow_ticks(
         raise ValueError("majorValues is required for add_pow_ticks.")
     if len(majorValues) < 2:
         raise ValueError("majorValues must contain at least two values.")
-    minor_layer = _pow_minor_layer(
-        df, field, axis, majorValues, minorTickSize, exponent, nMinor
-    )
+    minor_layer = _pow_minor_layer(df, field, axis, majorValues, minorTickSize, exponent, nMinor)
     if axis == "y":
         return alt.layer(chart, minor_layer).resolve_axis(y="independent")
     else:

@@ -52,22 +52,12 @@ x_enc = alt.X(
 )
 color_enc = alt.Color("body:N", sort=BODIES, title=None)
 
-points = (
-    alt.Chart(df)
-    .mark_point()
-    .encode(x=x_enc, y=alt.Y("period:Q", title="Period (s)"), color=color_enc)
-)
+points = alt.Chart(df).mark_point().encode(x=x_enc, y=alt.Y("period:Q", title="Period (s)"), color=color_enc)
 
-trend = (
-    alt.Chart(df_fit)
-    .mark_line()
-    .encode(x=alt.X("length:Q", scale=x_scale), y=alt.Y("period:Q"), color=color_enc)
-)
+trend = alt.Chart(df_fit).mark_line().encode(x=alt.X("length:Q", scale=x_scale), y=alt.Y("period:Q"), color=color_enc)
 
 chart = points + trend
-chart = ds.add_pow_ticks(
-    chart, df, "length", axis="x", exponent=0.5, majorValues=major_values
-)
+chart = ds.add_pow_ticks(chart, df, "length", axis="x", exponent=0.5, majorValues=major_values)
 
 ds.save(chart, "power")
 print("saved power")
