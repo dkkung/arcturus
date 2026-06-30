@@ -531,6 +531,8 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "fontWeight": opts["fontWeight"],
             },
             "title": {
+                "anchor": "middle",
+                "frame": "group",
                 "color": "white" if opts["darkmode"] else "black",
                 "font": opts["font"],
                 "fontSize": opts["fontSize"],

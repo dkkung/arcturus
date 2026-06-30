@@ -277,3 +277,15 @@ class TestCornerRadius:
         theme()
         spec = _dysonsphere_theme()
         assert "cornerRadius" not in spec["config"]["arc"]
+
+
+class TestTitleConfig:
+    def test_title_anchor_is_middle(self):
+        theme()
+        spec = _dysonsphere_theme()
+        assert spec["config"]["title"]["anchor"] == "middle"
+
+    def test_title_frame_is_group(self):
+        theme()
+        spec = _dysonsphere_theme()
+        assert spec["config"]["title"]["frame"] == "group"
