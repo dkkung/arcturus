@@ -1,7 +1,7 @@
 import altair as alt
 import pytest
 
-from dysonsphere.theme import _load_style_overrides, create_config, theme
+from dysonsphere.theme import _dysonsphere_theme, _load_style_overrides, create_config, theme
 
 
 @pytest.fixture(autouse=True)
@@ -224,3 +224,56 @@ class TestCustomPalettes:
         )
         with pytest.raises(ValueError, match="strings"):
             theme()
+
+
+class TestCornerRadius:
+    def test_false_default_omits_key_from_bar(self):
+        theme()
+        spec = _dysonsphere_theme()
+        assert "cornerRadiusEnd" not in spec["config"]["bar"]
+
+    def test_false_default_omits_key_from_rect(self):
+        theme()
+        spec = _dysonsphere_theme()
+        assert "cornerRadius" not in spec["config"]["rect"]
+
+    def test_true_resolves_to_min_dimension_over_100(self):
+        theme(chartWidth=200, chartHeight=300, cornerRadius=True)
+        assert alt.theme.options["cornerRadius"] == pytest.approx(2.0)
+
+    def test_true_applies_corner_radius_end_to_bar(self):
+        theme(chartWidth=100, chartHeight=100, cornerRadius=True)
+        spec = _dysonsphere_theme()
+        assert spec["config"]["bar"]["cornerRadiusEnd"] == pytest.approx(1.0)
+
+    def test_true_applies_corner_radius_to_rect(self):
+        theme(chartWidth=100, chartHeight=100, cornerRadius=True)
+        spec = _dysonsphere_theme()
+        assert spec["config"]["rect"]["cornerRadius"] == pytest.approx(1.0)
+
+    def test_explicit_float_used_as_is(self):
+        theme(cornerRadius=3.0)
+        assert alt.theme.options["cornerRadius"] == pytest.approx(3.0)
+        spec = _dysonsphere_theme()
+        assert spec["config"]["bar"]["cornerRadiusEnd"] == pytest.approx(3.0)
+        assert spec["config"]["rect"]["cornerRadius"] == pytest.approx(3.0)
+
+    def test_true_applies_corner_radius_to_boxplot_box(self):
+        theme(chartWidth=100, chartHeight=100, cornerRadius=True)
+        spec = _dysonsphere_theme()
+        assert spec["config"]["boxplot"]["box"]["cornerRadius"] == pytest.approx(1.0)
+
+    def test_false_default_omits_key_from_boxplot_box(self):
+        theme()
+        spec = _dysonsphere_theme()
+        assert "cornerRadius" not in spec["config"]["boxplot"]["box"]
+
+    def test_true_applies_corner_radius_to_arc(self):
+        theme(chartWidth=100, chartHeight=100, cornerRadius=True)
+        spec = _dysonsphere_theme()
+        assert spec["config"]["arc"]["cornerRadius"] == pytest.approx(1.0)
+
+    def test_false_default_omits_key_from_arc(self):
+        theme()
+        spec = _dysonsphere_theme()
+        assert "cornerRadius" not in spec["config"]["arc"]

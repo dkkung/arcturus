@@ -40,6 +40,7 @@ _BUILTIN_DEFAULTS: dict[str, Any] = {
     "chartHeight": 100,
     "chartWidth": 100,
     "closed": None,
+    "cornerRadius": False,
     "darkmode": False,
     "dashedGrid": False,
     "dashedLine": False,
@@ -209,6 +210,8 @@ def theme(style: str | None = None, **kwargs: Any) -> None:
         p["markSize"] = min(p["chartWidth"], p["chartHeight"]) * 0.1
     if p["markStrokeWidth"] is None:
         p["markStrokeWidth"] = p["axisWidth"]
+    if p["cornerRadius"] is True:
+        p["cornerRadius"] = min(p["chartWidth"], p["chartHeight"]) / 100
     if p["chartFill"] is None and not p["darkmode"]:
         p["chartFill"] = "white"
 
@@ -232,6 +235,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "stroke": opts["markStroke"],
                 "strokeOpacity": opts["markStrokeOpacity"],
                 "strokeWidth": opts["markStrokeWidth"],
+                **({"cornerRadius": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
             },
             "area": {
                 "fill": opts["markFill"],
@@ -320,6 +324,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "stroke": opts["markStroke"],
                 "strokeOpacity": opts["markStrokeOpacity"],
                 "strokeWidth": opts["markStrokeWidth"],
+                **({"cornerRadiusEnd": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
             },
             "boxplot": {
                 "size": opts["markSize"] * 0.8,
@@ -334,6 +339,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                     "stroke": opts["markStroke"],
                     "strokeOpacity": opts["markStrokeOpacity"],
                     "strokeWidth": opts["markStrokeWidth"],
+                    **({"cornerRadius": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
                 },
                 "median": {
                     "fill": opts["markMedianFill"],
@@ -507,6 +513,7 @@ def _dysonsphere_theme() -> dict[str, Any]:
                 "stroke": opts["markStroke"],
                 "strokeOpacity": opts["markStrokeOpacity"],
                 "strokeWidth": opts["markStrokeWidth"],
+                **({"cornerRadius": opts["cornerRadius"]} if opts["cornerRadius"] else {}),
             },
             "square": {
                 "fill": opts["markFill"],
