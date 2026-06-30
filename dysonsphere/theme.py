@@ -232,6 +232,8 @@ def _dysonsphere_theme() -> dict[str, Any]:
             "arc": {
                 "fill": opts["markFill"],
                 "fillOpacity": opts["markFillOpacity"],
+                "innerRadius": min(opts["chartWidth"], opts["chartHeight"]) / 4,
+                "padAngle": 0.03,
                 "stroke": opts["markStroke"],
                 "strokeOpacity": opts["markStrokeOpacity"],
                 "strokeWidth": opts["markStrokeWidth"],

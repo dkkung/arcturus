@@ -278,6 +278,21 @@ class TestCornerRadius:
         spec = _dysonsphere_theme()
         assert "cornerRadius" not in spec["config"]["arc"]
 
+    def test_arc_inner_radius_scales_with_chart_size(self):
+        theme(chartWidth=100, chartHeight=100)
+        spec = _dysonsphere_theme()
+        assert spec["config"]["arc"]["innerRadius"] == pytest.approx(25.0)
+
+    def test_arc_inner_radius_uses_smaller_dimension(self):
+        theme(chartWidth=80, chartHeight=200)
+        spec = _dysonsphere_theme()
+        assert spec["config"]["arc"]["innerRadius"] == pytest.approx(20.0)
+
+    def test_arc_pad_angle(self):
+        theme()
+        spec = _dysonsphere_theme()
+        assert spec["config"]["arc"]["padAngle"] == pytest.approx(0.03)
+
 
 class TestTitleConfig:
     def test_title_anchor_is_middle(self):
