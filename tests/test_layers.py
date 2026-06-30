@@ -1,7 +1,7 @@
 import altair as alt
 import pytest
 
-from dysonsphere.layers import _rule_mark_kwargs, add_rule
+from dysonsphere.layers import _multilabel_layer, _rule_mark_kwargs, add_rule
 from dysonsphere.theme import theme
 
 
@@ -72,3 +72,102 @@ class TestAddRule:
     def test_invalid_axis_raises(self):
         with pytest.raises(ValueError, match="axis"):
             add_rule(0.5, axis="z")
+
+
+CATS = ["A", "B", "C", "D"]
+GROUPS = {"Row": [True, False, True, False]}
+
+
+class TestSpans:
+    def test_line_style_height_larger_than_no_spans(self):
+        theme(chartWidth=100)
+        base = _multilabel_layer(GROUPS, CATS)
+        with_spans = _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]})
+        assert with_spans._kwds["height"] > base._kwds["height"]
+
+    def test_bracket_style_height_larger_than_line(self):
+        theme(chartWidth=100)
+        line = _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]})
+        bracket = _multilabel_layer(
+            GROUPS, CATS, span={"": ["A", "B"]},
+            spanBracketStyle="bracket", spanBracketReverse=False,
+        )
+        assert bracket._kwds["height"] > line._kwds["height"]
+
+    def test_label_increases_height(self):
+        theme(chartWidth=100)
+        no_lbl = _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]})
+        with_lbl = _multilabel_layer(GROUPS, CATS, span={"Group 1": ["A", "B"]})
+        assert with_lbl._kwds["height"] > no_lbl._kwds["height"]
+
+    def test_implicit_span_matches_explicit(self):
+        theme(chartWidth=100)
+        explicit = _multilabel_layer(GROUPS, CATS, span={"G": ["A", "B", "C"]})
+        implicit = _multilabel_layer(GROUPS, CATS, span={"G": ["A", "C"]})
+        assert explicit._kwds["height"] == pytest.approx(implicit._kwds["height"])
+
+    def test_span_label_position_top(self):
+        theme(chartWidth=100)
+        ann = _multilabel_layer(GROUPS, CATS, span={"G1": ["A", "B"]}, spanLabelPosition="top")
+        assert isinstance(ann, alt.LayerChart)
+
+    def test_span_reverse(self):
+        theme(chartWidth=100)
+        rev = _multilabel_layer(
+            GROUPS, CATS, span={"": ["A", "B"]}, spanBracketStyle="bracket", spanBracketReverse=True
+        )
+        line = _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]})
+        assert rev._kwds["height"] == pytest.approx(line._kwds["height"])
+
+    def test_multiple_spans(self):
+        theme(chartWidth=100)
+        ann = _multilabel_layer(
+            GROUPS, CATS,
+            span={"Group 1": ["A", "B"], "Group 2": ["C", "D"]},
+        )
+        assert isinstance(ann, alt.LayerChart)
+
+    def test_list_of_dicts_multiple_unlabeled(self):
+        theme(chartWidth=100)
+        ann = _multilabel_layer(
+            GROUPS, CATS,
+            span=[{None: ["A", "B"]}, {None: ["C", "D"]}],
+        )
+        assert isinstance(ann, alt.LayerChart)
+
+    def test_invalid_cat_raises(self):
+        theme(chartWidth=100)
+        with pytest.raises(ValueError, match="not in categories"):
+            _multilabel_layer(GROUPS, CATS, span={"G": ["A", "Z"]})
+
+    def test_empty_span_raises(self):
+        theme(chartWidth=100)
+        with pytest.raises(ValueError, match="must not be empty"):
+            _multilabel_layer(GROUPS, CATS, span={"G": []})
+
+    def test_invalid_bracket_style_raises(self):
+        theme(chartWidth=100)
+        with pytest.raises(ValueError, match="spanBracketStyle"):
+            _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]}, spanBracketStyle="arrow")
+
+    def test_invalid_label_position_raises(self):
+        theme(chartWidth=100)
+        with pytest.raises(ValueError, match="spanLabelPosition"):
+            _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]}, spanLabelPosition="left")
+
+    def test_explicit_span_gap_changes_height(self):
+        theme(chartWidth=100)
+        default_gap = _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]})
+        large_gap = _multilabel_layer(GROUPS, CATS, span={"": ["A", "B"]}, spanGap=20)
+        assert large_gap._kwds["height"] > default_gap._kwds["height"]
+
+    def test_defer_cat_label_below_spans(self):
+        theme(chartWidth=100)
+        no_span = _multilabel_layer(GROUPS, CATS, categoryLabel=True, categoryLabelPosition="bottom")
+        with_span = _multilabel_layer(
+            GROUPS, CATS,
+            categoryLabel=True,
+            categoryLabelPosition="bottom",
+            span={"G": ["A", "B"]},
+        )
+        assert with_span._kwds["height"] > no_span._kwds["height"]

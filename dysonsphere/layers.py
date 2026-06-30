@@ -807,6 +807,12 @@ def _multilabel_layer(
     categoryLabelPosition: str = "bottom",
     categoryLabelAngle: int = -45,
     categoryLabelHeight: int | None = None,
+    span: dict[str | None, list[str]] | list[dict[str | None, list[str]]] | None = None,
+    spanBracketStyle: str = "line",
+    spanLabelPosition: str = "bottom",
+    spanBracketReverse: bool = True,
+    spanTickHeight: float | None = None,
+    spanGap: float | None = None,
 ) -> alt.LayerChart:
     """
     Build a condition-table annotation chart to place below a strip/violin/boxplot.
@@ -903,6 +909,32 @@ def _multilabel_layer(
         ``fontSize``, ``categoryLabelAngle``, and the longest category name when ``None``
         (default): ``ceil(fontSize × 0.6 × max_len × |sin(angle)| + fontSize ×
         |cos(angle)|)``.
+    span:
+        Dict mapping span label → list of categories, or a list of such
+        single-entry dicts (one per span). The span extends from the lowest
+        to the highest index in ``categories`` found in the list. Use ``""``
+        as a key (or ``None``) to draw a rule/bracket with no label; the list
+        form allows multiple unlabeled spans without key collisions::
+
+            span={"Group 1": ["Cat A", "Cat B"], "Group 2": ["Cat C", "Cat D"]}
+
+            span=[{None: ["Cat A", "Cat B"]}, {None: ["Cat C", "Cat D"]}]
+    spanBracketStyle:
+        ``"line"`` (default) draws a plain horizontal rule. ``"bracket"`` adds
+        vertical end ticks at the left and right edges of the span.
+    spanLabelPosition:
+        Where to place the span label relative to the rule. ``"bottom"``
+        (default) places it below; ``"top"`` places it above.
+    spanBracketReverse:
+        When ``True`` (default), bracket end ticks point toward the annotation
+        rows. When ``False``, they point away. No effect when
+        ``spanBracketStyle="line"``.
+    spanTickHeight:
+        Height in pixels of the bracket end ticks. Defaults to the active
+        theme ``tickSize``. Only used when ``spanBracketStyle="bracket"``.
+    spanGap:
+        Vertical gap in pixels between the last annotation row and the span
+        rule. Defaults to ``rowHeight × 0.3``.
 
     Notes
     -----
@@ -971,6 +1003,10 @@ def _multilabel_layer(
         raise ValueError(f"labelAlign must be 'left' or 'right', got {labelAlign!r}")
     if orientation not in ("vertical", "horizontal"):
         raise ValueError(f"orientation must be 'vertical' or 'horizontal', got {orientation!r}")
+    if spanBracketStyle not in ("line", "bracket"):
+        raise ValueError(f"spanBracketStyle must be 'line' or 'bracket', got {spanBracketStyle!r}")
+    if spanLabelPosition not in ("top", "bottom"):
+        raise ValueError(f"spanLabelPosition must be 'top' or 'bottom', got {spanLabelPosition!r}")
 
     # Normalise rowStyles to a dict so the rest of the code has a single code path.
     if isinstance(rowStyles, list):
@@ -1005,8 +1041,14 @@ def _multilabel_layer(
     if rowHeight is None:
         rowHeight = 10
 
+    # When categoryLabel="bottom" and spans are present, defer the label row
+    # to below the spans section so the visual order is: rows → spans → labels.
+    defer_cat_label = bool(categoryLabel and span and categoryLabelPosition != "top")
+
     band_range = None
     label_y = 0.0
+    label_y_offset = 0.0
+    extra = 0.0
     if categoryLabel:
         if categoryLabelPosition not in ("top", "bottom"):
             raise ValueError(
@@ -1033,7 +1075,14 @@ def _multilabel_layer(
             label_y = label_y_offset
         else:
             band_range = [0, len(row_order) * rowHeight]
-            label_y = len(row_order) * rowHeight + label_y_offset + extra
+            if not defer_cat_label:
+                label_y = len(row_order) * rowHeight + label_y_offset + extra
+
+    # When spans are present, chart_h will grow beyond n*rowHeight. Without an
+    # explicit range, Vega auto-fits the band scale to the full chart height,
+    # stretching rows into the span section. Anchoring the range prevents this.
+    if span and band_range is None:
+        band_range = [0, len(row_order) * rowHeight]
 
     def _norm(v: object) -> str:
         if isinstance(v, bool):
@@ -1047,7 +1096,9 @@ def _multilabel_layer(
     ]
     marks_df = pl.DataFrame(rows)
 
-    chart_h = len(row_order) * rowHeight + (categoryLabelHeight or 0 if categoryLabel else 0)
+    chart_h = len(row_order) * rowHeight + (
+        0 if defer_cat_label else (categoryLabelHeight or 0 if categoryLabel else 0)
+    )
 
     x_enc = alt.X(
         "__category:N",
@@ -1246,7 +1297,107 @@ def _multilabel_layer(
         else:
             layers.extend([negative, positive])
 
-    if categoryLabel:
+    if categoryLabel and not defer_cat_label:
+        label_df = pl.DataFrame({"__category": categories})
+        layers.append(
+            alt.Chart(label_df)
+            .mark_text(
+                fontSize=fontSize,
+                angle=categoryLabelAngle % 360,
+                align="center" if categoryLabelAngle % 360 == 0 else "right",
+                baseline="middle",
+            )
+            .encode(x=x_enc, y=alt.value(label_y), text=alt.Text("__category:N"))
+        )
+
+    if span:
+        span_pairs: list[tuple[str | None, list[str]]]
+        if isinstance(span, list):
+            span_pairs = [(k, v) for d in span for k, v in d.items()]
+        else:
+            span_pairs = list(span.items())
+
+        if spanTickHeight is None:
+            spanTickHeight = alt.theme.options.get("tickSize", 3)
+
+        band_padding = alt.theme.options.get("bandPadding", 0.1)
+        n_cats = len(categories)
+        step = chartWidth / (n_cats + 2 * band_padding)
+        axisWidth_val = alt.theme.options.get("axisWidth", 0.25)
+        darkmode_val = alt.theme.options.get("darkmode", False)
+        span_color = "white" if darkmode_val else "black"
+        _one_row = {"values": [{}]}
+
+        span_gap = rowHeight * 0.3 if spanGap is None else spanGap
+        label_gap = 2.0
+        has_any_label = any(bool(lbl) for lbl, _ in span_pairs)
+
+        if spanLabelPosition == "bottom":
+            span_y = chart_h + span_gap
+            tick_below_h = spanTickHeight if spanBracketStyle == "bracket" and not spanBracketReverse else 0.0
+            label_y = span_y + tick_below_h + label_gap if has_any_label else 0.0
+            label_baseline = "top"
+            chart_h = span_y + tick_below_h + (fontSize + label_gap if has_any_label else 0.0) + 2.0
+        else:  # top
+            label_baseline = "top"
+            if has_any_label:
+                label_y = chart_h + span_gap
+                span_y = label_y + fontSize + label_gap
+            else:
+                label_y = 0.0
+                span_y = chart_h + span_gap
+            tick_below_h = spanTickHeight if spanBracketStyle == "bracket" and not spanBracketReverse else 0.0
+            chart_h = span_y + tick_below_h + 2.0
+
+        if spanBracketStyle == "bracket":
+            tick_y_start = (span_y - spanTickHeight) if spanBracketReverse else span_y
+            tick_y_end = span_y if spanBracketReverse else (span_y + spanTickHeight)
+
+        for span_lbl, span_cats in span_pairs:
+            if not span_cats:
+                raise ValueError(f"span[{span_lbl!r}] must not be empty")
+            indices = []
+            for cat in span_cats:
+                if cat not in categories:
+                    raise ValueError(f"span[{span_lbl!r}]: {cat!r} is not in categories")
+                indices.append(categories.index(cat))
+            i_start, i_end = min(indices), max(indices)
+
+            x1 = step * (band_padding + 0.5 + i_start) - step * 0.30
+            x2 = step * (band_padding + 0.5 + i_end) + step * 0.30
+            x_mid = (x1 + x2) / 2
+
+            # Rule — alt.value() for all positions so no :Q scale is added to the layer
+            layers.append(
+                alt.Chart(_one_row)
+                .mark_rule(color=span_color, strokeWidth=axisWidth_val, strokeDash=[0, 0])
+                .encode(x=alt.value(x1), x2=alt.value(x2), y=alt.value(span_y))
+            )
+
+            # Bracket ticks
+            if spanBracketStyle == "bracket":
+                for tick_x in (x1, x2):
+                    layers.append(
+                        alt.Chart(_one_row)
+                        .mark_rule(color=span_color, strokeWidth=axisWidth_val, strokeDash=[0, 0])
+                        .encode(x=alt.value(tick_x), y=alt.value(tick_y_start), y2=alt.value(tick_y_end))
+                    )
+
+            # Label
+            if span_lbl:
+                lbl_df = pl.DataFrame({"__slabel": [span_lbl]})
+                layers.append(
+                    alt.Chart(lbl_df)
+                    .mark_text(
+                        fontSize=fontSize, color=span_color,
+                        baseline=label_baseline, align="center",
+                    )
+                    .encode(x=alt.value(x_mid), y=alt.value(label_y), text=alt.Text("__slabel:N"))
+                )
+
+    if defer_cat_label:
+        label_y = chart_h + label_y_offset + extra
+        chart_h += categoryLabelHeight or 0
         label_df = pl.DataFrame({"__category": categories})
         layers.append(
             alt.Chart(label_df)
@@ -1290,7 +1441,9 @@ def add_multilabel(
     All keyword arguments beyond the named parameters are forwarded to
     :func:`_multilabel_layer` — see its docstring for the full parameter list,
     including ``style``, ``rowStyles``, ``categoryLabel``,
-    ``categoryLabelPosition``, ``categoryLabelAngle``, and ``categoryLabelHeight``.
+    ``categoryLabelPosition``, ``categoryLabelAngle``, ``categoryLabelHeight``,
+    ``span``, ``spanBracketStyle``, ``spanLabelPosition``, ``spanBracketReverse``,
+    ``spanTickHeight``, and ``spanGap``.
 
     Parameters
     ----------

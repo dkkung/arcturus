@@ -578,6 +578,35 @@ ds.add_multilabel(
 
 `categoryLabelHeight` is auto-computed as `ceil(fontSize × 0.6 × max_len × |sin(angle)| + fontSize × |cos(angle)|)` — the rotated bounding box of the longest label. Pass an explicit value to adjust the space between the category label text and the adjacent data rows.
 
+#### Spans
+
+Pass `span=` to `add_multilabel()` to group x-axis categories under a shared rule or bracket with an optional label. The span extends from the lowest to the highest index of the listed categories, so passing only the first and last members is equivalent to listing all of them.
+
+```python
+ds.add_multilabel(
+    chart,
+    CONDITIONS,
+    categories=CATEGORIES,
+    span=[
+        {"Span 1": ["A", "B", "C"]},
+        {"Span 2": ["D", "E", "F"]},
+    ],
+    spanBracketStyle="line",   # "line" (default) or "bracket"
+)
+```
+
+Use a list of single-entry dicts instead of a plain dict when you need multiple unlabeled spans (plain dict keys must be unique; `None` or `""` as a key suppresses the label):
+
+```python
+span=[{None: ["A", "B", "C"]}, {None: ["D", "E", "F"]}]
+```
+
+The span section is always placed below all annotation rows. When `categoryLabel=True` and `categoryLabelPosition="bottom"`, the category label row is deferred to below the spans so the visual order is always: rows → spans → category labels.
+
+![Multilabel span example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/multilabel_span_example_light.png)
+
+Span parameters are listed in the table below.
+
 ![Multilabel example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/multilabel_example_light.png)
 
 | Parameter | Default | Description |
@@ -607,6 +636,12 @@ ds.add_multilabel(
 | `categoryLabelPosition` | `"bottom"` | `"bottom"` places the category label row below all data rows; `"top"` places it above |
 | `categoryLabelAngle` | `-45` | Rotation angle of the category name text in degrees |
 | `categoryLabelHeight` | auto | Height in pixels reserved for the category label row; auto-computed from font size, angle, and longest label when `None` |
+| `span` | `None` | Dict or list of single-entry dicts mapping span label → list of categories; `None` or `""` key suppresses the label |
+| `spanBracketStyle` | `"line"` | `"line"` draws a plain horizontal rule; `"bracket"` adds vertical end ticks |
+| `spanLabelPosition` | `"bottom"` | Where to place the span label relative to the rule: `"bottom"` or `"top"` |
+| `spanBracketReverse` | `True` | When `True`, bracket end ticks point toward the annotation rows; when `False`, they point away |
+| `spanTickHeight` | `theme(tickSize)` | Height in pixels of the bracket end ticks; only used when `spanBracketStyle="bracket"` |
+| `spanGap` | `rowHeight × 0.3` | Vertical gap in pixels between the last annotation row and the span rule |
 
 **Dark mode:** `"symbol"` style resolves fill colours from `ds.theme()` at construction time — positive marks are white, unfilled marks use `greys[11]`. Pass a callable to `ds.save()` so the chart rebuilds after each darkmode toggle:
 ```python
