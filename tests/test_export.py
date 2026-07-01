@@ -531,6 +531,22 @@ class TestReadLoad:
         with pytest.raises(ValueError, match="Vega-Lite JSON"):
             ds.load(str(saved / "t_light.png"))
 
+    def test_read_no_metadata_raises(self, tmp_path):
+        import dysonsphere as ds
+
+        chart = alt.Chart(pl.DataFrame({"x": [1, 2], "y": [1.0, 2.0]})).mark_point().encode(x="x:Q", y="y:Q")
+        ds.save(chart, str(tmp_path / "bare"), saveMetadata=False, background=["light"])
+        with pytest.raises(ValueError, match="no dysonsphere metadata"):
+            ds.read(str(tmp_path / "bare_vegalite.json"))
+
+    def test_read_report_save_writes_txt(self, saved, tmp_path):
+        import dysonsphere as ds
+
+        outdir = tmp_path / "reports"
+        ds.read(str(saved / "t_light.png"), save=str(outdir))
+        txts = list(outdir.glob("dysonsphere_report_*.txt"))
+        assert len(txts) == 1 and txts[0].read_text(encoding="utf-8").startswith("Statistics")
+
 
 # ── _fix_tick_alignment() ─────────────────────────────────────────────────────
 
