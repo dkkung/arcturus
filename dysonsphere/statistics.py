@@ -192,21 +192,21 @@ def _run_omnibus(test: str, groups: list[np.ndarray], labels: list) -> _OmnibusR
 
 
 # ── Correlation ────────────────────────────────────────────────────────────
-def _run_correlation(kind: str, x: np.ndarray, y: np.ndarray) -> dict:
+def _run_correlation(method: str, x: np.ndarray, y: np.ndarray) -> dict:
     """Compute a correlation coefficient (+ OLS fit for Pearson) between two continuous vars."""
     from scipy import stats as _stats
 
-    if kind not in _CORRELATION_METHODS:
-        raise ValueError(f"kind must be one of {sorted(_CORRELATION_METHODS)}, got {kind!r}")
+    if method not in _CORRELATION_METHODS:
+        raise ValueError(f"method must be one of {sorted(_CORRELATION_METHODS)}, got {method!r}")
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
-    _, symbol, machine = _CORRELATION_METHODS[kind]
+    _, symbol, machine = _CORRELATION_METHODS[method]
 
-    if kind == "pearson":
+    if method == "pearson":
         res = _stats.linregress(x, y)
         coef = float(res.rvalue)
         return {
-            "method": kind,
+            "method": method,
             "symbol": symbol,
             "machine": machine,
             "coefficient": coef,
@@ -217,9 +217,9 @@ def _run_correlation(kind: str, x: np.ndarray, y: np.ndarray) -> dict:
             "n": int(x.size),
         }
 
-    res = _stats.spearmanr(x, y) if kind == "spearman" else _stats.kendalltau(x, y)
+    res = _stats.spearmanr(x, y) if method == "spearman" else _stats.kendalltau(x, y)
     return {
-        "method": kind,
+        "method": method,
         "symbol": symbol,
         "machine": machine,
         "coefficient": float(res.statistic),

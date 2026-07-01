@@ -3,7 +3,13 @@ import numpy as np
 import polars as pl
 import pytest
 
-from dysonsphere.layers import _format_asterisks, _format_pvalue, add_comparisons, add_correlation
+from dysonsphere.layers import (
+    _correlation_label,
+    _format_asterisks,
+    _format_pvalue,
+    add_comparisons,
+    add_correlation,
+)
 from dysonsphere.theme import theme
 
 CATEGORIES = ["A", "B"]
@@ -540,8 +546,8 @@ class TestCorrelationStats:
         r = st._run_correlation("kendall", _CX, _CY)
         assert r["symbol"] == "τ" and r["rSquared"] is None
 
-    def test_unknown_kind(self):
-        with pytest.raises(ValueError, match="kind must be"):
+    def test_unknown_method(self):
+        with pytest.raises(ValueError, match="method must be"):
             st._run_correlation("nope", _CX, _CY)
 
     def test_record_shape_and_clamp(self):
@@ -567,6 +573,54 @@ class TestCorrelationStats:
         assert "x - " in text and "+ -" not in text
 
 
+class TestCorrelationLabel:
+    def _pearson(self):
+        return st._run_correlation("pearson", _CX, _CY)
+
+    def _label(self, res, **kw):
+        kw.setdefault("coefficient", "r")
+        kw.setdefault("includePvalue", False)
+        kw.setdefault("includeEquation", False)
+        return _correlation_label(res, decimals=3, notation=None, **kw)
+
+    def test_default_is_coefficient_only(self):
+        assert self._label(self._pearson()) == f"r = {self._pearson()['coefficient']:.2f}"
+
+    def test_coefficient_r2_only(self):
+        assert self._label(self._pearson(), coefficient="r2").startswith("r² = ")
+        assert "r = " not in self._label(self._pearson(), coefficient="r2")
+
+    def test_coefficient_both(self):
+        lbl = self._label(self._pearson(), coefficient="both")
+        assert lbl.startswith("r = ") and "r² = " in lbl
+
+    def test_include_pvalue(self):
+        assert "P " in self._label(self._pearson(), includePvalue=True)
+
+    def test_include_equation(self):
+        assert ", y = " in self._label(self._pearson(), coefficient="both", includeEquation=True)
+
+    def test_rank_ignores_coefficient_and_equation(self):
+        rho = st._run_correlation("spearman", _CX, _CY)
+        lbl = self._label(rho, coefficient="both", includeEquation=True, includePvalue=True)
+        assert lbl.startswith("ρ = ") and "r² = " not in lbl and ", y = " not in lbl
+
+    def test_verbose_shortcut(self):
+        # verbose=True == coefficient="both", includePvalue=True, includeEquation=True
+        spec = add_correlation(pl.DataFrame({"x": _CX, "y": _CY}), "x", "y", verbose=True).to_dict()
+        name = next(
+            lyr["data"]["name"]
+            for lyr in spec["layer"]
+            if lyr.get("encoding", {}).get("text", {}).get("field") == "__text"
+        )
+        readout = spec["datasets"][name][0]["__text"]
+        assert "r = " in readout and "r² = " in readout and "P " in readout and ", y = " in readout
+
+    def test_invalid_coefficient_raises(self):
+        with pytest.raises(ValueError, match="coefficient must be"):
+            add_correlation(pl.DataFrame({"x": _CX, "y": _CY}), "x", "y", coefficient="nope")
+
+
 class TestAddCorrelation:
     @pytest.fixture
     def scatter_df(self):
@@ -580,7 +634,7 @@ class TestAddCorrelation:
         assert len(layer.to_dict()["layer"]) == 2  # line + readout
 
     def test_spearman_no_line(self, scatter_df):
-        layer = add_correlation(scatter_df, "x", "y", kind="spearman")
+        layer = add_correlation(scatter_df, "x", "y", method="spearman")
         assert len(layer.to_dict()["layer"]) == 1  # readout only, no line
 
     def test_line_false_suppresses_line(self, scatter_df):

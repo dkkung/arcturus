@@ -1457,14 +1457,23 @@ def add_pvalue(*args, **kwargs) -> alt.LayerChart:
 # Correlation
 
 
-def _correlation_label(result: dict, *, verbose: bool, decimals: int, notation: str | None) -> str:
-    """Build the corner-readout string from a correlation result."""
-    parts = [f"{result['symbol']} = {result['coefficient']:.2f}"]
-    if result["rSquared"] is not None:
-        parts.append(f"r² = {result['rSquared']:.2f}")
-    parts.append(_format_pvalue(result["pvalue"], decimals=decimals, notation=notation))
+def _correlation_label(
+    result: dict, *, coefficient: str, includePvalue: bool, includeEquation: bool, decimals: int, notation: str | None
+) -> str:
+    """Build the corner-readout string from a correlation result, one part at a time."""
+    is_pearson = result["rSquared"] is not None  # only Pearson has r²/slope
+    parts: list[str] = []
+    if not is_pearson:
+        parts.append(f"{result['symbol']} = {result['coefficient']:.2f}")  # ρ/τ always
+    else:
+        if coefficient in ("r", "both"):
+            parts.append(f"r = {result['coefficient']:.2f}")
+        if coefficient in ("r2", "both"):
+            parts.append(f"r² = {result['rSquared']:.2f}")
+    if includePvalue:
+        parts.append(_format_pvalue(result["pvalue"], decimals=decimals, notation=notation))
     label = ", ".join(parts)
-    if verbose and result["slope"] is not None:
+    if includeEquation and result["slope"] is not None:
         sign = "+" if result["intercept"] >= 0 else "-"
         label += f", y = {result['slope']:.2f}x {sign} {abs(result['intercept']):.2f}"
     return label
@@ -1475,10 +1484,13 @@ def add_correlation(
     xCol: str,
     yCol: str,
     *,
-    kind: str = "pearson",
+    method: str = "pearson",
     line: bool = True,
     position: str | None = "topLeft",
     label: str | None = None,
+    coefficient: str = "r",
+    includePvalue: bool = False,
+    includeEquation: bool = False,
     verbose: bool = False,
     offsetX: int = 0,
     offsetY: int = 0,
@@ -1488,7 +1500,7 @@ def add_correlation(
     color: str | None = None,
     strokeWidth: float | None = None,
     strokeDash: bool | list[int] | None = None,
-    opacity: float = 1.0,
+    opacity: float | None = None,
     lineStyle: dict | None = None,
     report: bool = False,
     save: bool | str = False,
@@ -1496,10 +1508,10 @@ def add_correlation(
     """
     Annotate a scatter with a correlation coefficient (and an OLS fit line for Pearson).
 
-    Reports the coefficient + p-value as a corner label, and — for
-    ``kind="pearson"`` only — draws the ordinary-least-squares regression line.
-    A structured record (``kind="correlation"``) is queued for the export
-    metadata (see ``ds.save``), exactly like ``add_comparisons``.
+    Reports the coefficient as a corner label, and — for ``method="pearson"``
+    only — draws the ordinary-least-squares regression line. A structured record
+    (``kind="correlation"``) is queued for the export metadata (see ``ds.save``),
+    exactly like ``add_comparisons``.
 
     Combine with your scatter using ``+``:  ``chart + add_correlation(...)``.
 
@@ -1509,24 +1521,35 @@ def add_correlation(
         DataFrame containing the data (polars or pandas).
     xCol, yCol:
         Column names for the two **continuous** variables.
-    kind:
+    method:
         ``'pearson'`` (default) — linear correlation ``r`` + ``r²`` + slope/intercept,
         with an OLS line. ``'spearman'`` — rank correlation ``ρ``. ``'kendall'`` —
-        rank correlation ``τ``. The rank kinds report the coefficient only (no ``r²``,
-        no line — a straight line isn't their model).
+        rank correlation ``τ``. The rank methods report the coefficient only (no ``r²``,
+        no line — a straight line isn't their model). Matches pandas' ``DataFrame.corr``.
     line:
-        Draw the OLS fit line. Default ``True``. Only applies to ``kind="pearson"``
-        (a no-op for the rank kinds). Set ``False`` to suppress it and, e.g., compose
+        Draw the OLS fit line. Default ``True``. Only applies to ``method="pearson"``
+        (a no-op for the rank methods). Set ``False`` to suppress it and, e.g., compose
         your own line from the returned/recorded slope and intercept.
     position:
         Corner preset (an ``add_text`` position, e.g. ``'topLeft'``) for the readout.
         Default ``'topLeft'``. ``None`` computes the result for the report/metadata but
         draws no label.
     label:
-        Override string for the corner readout. ``None`` builds it from the result.
+        Override string for the corner readout. ``None`` builds it from the parts below.
+    coefficient:
+        Pearson only — which statistic the readout shows: ``'r'`` (default), ``'r2'``
+        (just ``r²``, Excel-trendline style), or ``'both'``. Ignored for the rank kinds
+        (they always show ``ρ``/``τ``).
+    includePvalue:
+        Append the p-value to the readout. Default ``False``.
+    includeEquation:
+        Pearson only — append the fit equation ``, y = 0.84x + 0.27``. Default ``False``.
     verbose:
-        ``False`` (default) → ``r = 0.87, r² = 0.76, P < 0.001``. ``True`` appends the
-        fit equation ``, y = 0.84x + 0.27`` (Pearson only).
+        Shortcut for the fullest readout: ``True`` is equivalent to
+        ``coefficient="both", includePvalue=True, includeEquation=True`` (and overrides
+        those three). Default ``False``. So the default readout is just ``r = 0.87``
+        (Pearson) / ``ρ = 0.81`` (rank); ``verbose=True`` gives
+        ``r = 0.87, r² = 0.76, P < 0.001, y = 0.84x + 0.27``.
     offsetX, offsetY:
         Pixel nudges for the readout, forwarded to ``add_text``.
     fontSize:
@@ -1534,9 +1557,9 @@ def add_correlation(
     decimals, notation:
         Control the p-value format in the readout, as in ``add_comparisons``.
     color, strokeWidth, strokeDash, opacity:
-        Curated style for the fit line (same four knobs as ``add_rule``). The line has
-        its own sensible defaults (solid, theme stroke colour) — it does *not* inherit
-        the theme's ``mark_line`` state.
+        Curated style overrides for the fit line (same four knobs as ``add_rule``). Each
+        defaults to ``None`` → the line inherits the theme's ``mark_line`` config; set one
+        to override just that property.
     lineStyle:
         A dict of raw ``mark_line`` properties merged in last, so any Vega-Lite line
         property is reachable (e.g. ``{"interpolate": "monotone", "strokeCap": "round"}``).
@@ -1554,7 +1577,7 @@ def add_correlation(
 
         scatter = alt.Chart(df).mark_point().encode(x="height:Q", y="weight:Q")
         scatter + ds.add_correlation(df, "height", "weight")                 # r + r² + OLS line
-        scatter + ds.add_correlation(df, "height", "weight", kind="spearman")  # ρ, no line
+        scatter + ds.add_correlation(df, "height", "weight", method="spearman")  # ρ, no line
         scatter + ds.add_correlation(
             df, "height", "weight",
             color="#c0392b", lineStyle={"strokeDash": [4, 2]},
@@ -1566,10 +1589,15 @@ def add_correlation(
     from .statistics import _make_correlation_record, _push_report, _render_report, _run_correlation
     from .utils import ensure_polars
 
+    if verbose:  # shortcut for the fullest readout; overrides the individual toggles
+        coefficient, includePvalue, includeEquation = "both", True, True
+    if coefficient not in ("r", "r2", "both"):
+        raise ValueError(f"coefficient must be 'r', 'r2', or 'both', got {coefficient!r}")
+
     df = ensure_polars(df)
     x = df[xCol].cast(pl.Float64).to_numpy()
     y = df[yCol].cast(pl.Float64).to_numpy()
-    result = _run_correlation(kind, x, y)
+    result = _run_correlation(method, x, y)
 
     layers: list = []
 
@@ -1578,11 +1606,21 @@ def add_correlation(
         x0, x1 = float(x.min()), float(x.max())
         slope, intercept = result["slope"], result["intercept"]
         fit_df = pl.DataFrame({"_x": [x0, x1], "_y": [slope * x0 + intercept, slope * x1 + intercept]})
-        mark_kwargs: dict = {
-            "color": alt.theme.options.get("markStroke", "black"),
-            "strokeWidth": (alt.theme.options.get("axisWidth", 0.5) or 0.5) * 2,
-        }
-        mark_kwargs.update(_rule_mark_kwargs(color, strokeWidth, strokeDash, opacity))
+        # By default the line inherits the theme's mark_line config (no overrides).
+        # Curated params override only what's passed; lineStyle overrides everything.
+        mark_kwargs: dict = {}
+        if color is not None:
+            mark_kwargs["color"] = color
+        if strokeWidth is not None:
+            mark_kwargs["strokeWidth"] = strokeWidth
+        if strokeDash is False:
+            mark_kwargs["strokeDash"] = [0, 0]
+        elif strokeDash is True:
+            mark_kwargs["strokeDash"] = alt.theme.options.get("dashedWidth", [2, 2])
+        elif isinstance(strokeDash, list):
+            mark_kwargs["strokeDash"] = strokeDash
+        if opacity is not None:
+            mark_kwargs["opacity"] = opacity
         if lineStyle:
             mark_kwargs.update(lineStyle)
         # Plain x:Q/y:Q with no title/axis override: the fit line shares the main chart's
@@ -1596,7 +1634,14 @@ def add_correlation(
         text = (
             label
             if label is not None
-            else _correlation_label(result, verbose=verbose, decimals=decimals, notation=notation)
+            else _correlation_label(
+                result,
+                coefficient=coefficient,
+                includePvalue=includePvalue,
+                includeEquation=includeEquation,
+                decimals=decimals,
+                notation=notation,
+            )
         )
         layers.append(
             add_text(

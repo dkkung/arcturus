@@ -4,7 +4,7 @@
 
 ### New features
 
-- **`add_correlation()`** - annotate a scatter with a correlation coefficient. `kind="pearson"` (default) reports `r`/`r²`/`P` and draws the OLS fit line; `"spearman"` / `"kendall"` report the rank coefficient only. Curated line style (`color`/`strokeWidth`/`strokeDash`/`opacity`) plus a raw `lineStyle` dict passthrough, and `line=False` to suppress. Feeds the same structured metadata as `add_comparisons()`.
+- **`add_correlation()`** - annotate a scatter with a correlation coefficient. `method="pearson"` (default; matches pandas' `DataFrame.corr`) draws the OLS fit line; `"spearman"` / `"kendall"` report the rank coefficient with no line. The corner readout is composed from independent parts — `coefficient` (`"r"` / `"r2"` / `"both"`), `includePvalue`, `includeEquation`, with `verbose=True` as a "show everything" shortcut — and defaults to just the coefficient. The fit line inherits the theme's `mark_line` config, with curated overrides (`color`/`strokeWidth`/`strokeDash`/`opacity`), a raw `lineStyle` dict passthrough, and `line=False` to suppress. Feeds the same structured metadata as `add_comparisons()`.
 
 ### Deprecated
 
