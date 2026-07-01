@@ -1,7 +1,7 @@
 """Pure statistical computation (no Altair).
 
 Backs the chart-annotation constructors in ``layers.py`` (notably
-``add_statistics``).  Holds the omnibus tests, hand-rolled post-hoc tests,
+``add_comparisons``).  Holds the omnibus tests, hand-rolled post-hoc tests,
 effect-size functions, and the descriptive report builder.  Nothing here
 imports Altair, so it is unit-testable in isolation.
 
@@ -45,7 +45,7 @@ _PARAMETRIC_POSTHOC = {"tukey_hsd", "games_howell", "ttest_ind", "ttest_rel"}
 
 
 # ── Report registry ────────────────────────────────────────────────────────
-# add_statistics() pushes a structured report *record* (a plain dict — the single
+# add_comparisons() pushes a structured report *record* (a plain dict — the single
 # source of truth) here; export.save() drains it, renders the human-readable
 # text from each record for the metadata description, and embeds the raw records
 # as JSON under usermeta.dysonsphere.statistics in the Vega-Lite spec.  Module-

@@ -37,7 +37,7 @@ def mark_violin(
     Build an Altair layer combining a violin plot behind a boxplot.
 
     Returns a ``LayerChart`` that can be saved directly or composed with other
-    layers (e.g. ``ds.add_statistics``).
+    layers (e.g. ``ds.add_comparisons``).
 
     Parameters
     ----------
@@ -235,7 +235,7 @@ def mark_strip(
     Build an Altair layer combining jittered or beeswarm points with a median indicator.
 
     Returns a ``LayerChart`` that can be saved directly or composed with other
-    layers (e.g. ``ds.add_statistics``).
+    layers (e.g. ``ds.add_comparisons``).
 
     Parameters
     ----------

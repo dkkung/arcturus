@@ -54,7 +54,7 @@ points = base.mark_circle().encode(
     xOffset=alt.XOffset("beeswarm_x:Q"),
 )
 
-ann = ds.add_statistics(
+ann = ds.add_comparisons(
     df,
     "group",
     "value",

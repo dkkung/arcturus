@@ -4,7 +4,7 @@
 
 ### Deprecated
 
-- **`add_pvalue()` renamed to `add_statistics()`** to reflect its expanded scope (omnibus tests, post-hoc tests, descriptive + effect-size reports, structured metadata). `add_pvalue()` still works as an alias but emits a `DeprecationWarning` and **will be removed in v2.0** — switch to `add_statistics()`.
+- **`add_pvalue()` renamed to `add_comparisons()`** to reflect its expanded scope (omnibus tests, post-hoc tests, descriptive + effect-size reports, structured metadata). `add_pvalue()` still works as an alias but emits a `DeprecationWarning` and **will be removed in v2.0** — switch to `add_comparisons()`.
 
 ## [v1.0.0] - 2026-06-30
 

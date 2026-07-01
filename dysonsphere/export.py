@@ -103,7 +103,7 @@ def save(
         - ``provenance`` — generation facts as fields: ``user``, ``script``,
           ``timestamp`` (ISO-8601), ``python``, ``altair``, ``dysonsphere``. In Jupyter,
           ``script`` is ``"<jupyter-notebook>"``; ``user`` falls back to ``"unknown_user"``.
-        - ``statistics`` — the structured records queued by ``add_statistics`` (groups,
+        - ``statistics`` — the structured records queued by ``add_comparisons`` (groups,
           omnibus result, comparisons with exact p-values and effect sizes); omitted when
           there are none.
 
@@ -113,7 +113,7 @@ def save(
 
         The facts are *not* also rendered as prose — that would bloat the files and
         duplicate the structured block. For a human-readable report use
-        ``add_statistics(report=True)`` (stdout) or ``save=`` (writes a ``.txt``).
+        ``add_comparisons(report=True)`` (stdout) or ``save=`` (writes a ``.txt``).
         ``saveMetadata=False`` suppresses the structured block entirely; your
         ``description`` (if any) is still written.
     background:
@@ -161,7 +161,7 @@ def save(
             "dysonsphere": importlib.metadata.version("dysonsphere"),
         }
 
-    # Drain the structured statistical records queued by add_statistics().  Always drain
+    # Drain the structured statistical records queued by add_comparisons().  Always drain
     # (so the queue does not leak into a later save), but only embed when saveMetadata is
     # on: the structured {provenance, statistics} block rides as JSON in the Vega-Lite
     # usermeta, the SVG <metadata> element, and the PNG dysonsphere iTXt chunk.
