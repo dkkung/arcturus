@@ -416,10 +416,10 @@ class TestSigFigs:
         assert lbl == "P = 0.4789"
 
     def test_report_independent_of_theme_sigfigs(self):
-        # theme sigFigs=2, but the report stays at its fixed 4 sig figs
+        # theme sigFigs=2, but the report stays at its fixed 3 sig figs
         theme(chartWidth=200, chartHeight=200, sigFigs=2)
-        assert st._fmt_p(0.47891234) == "= 0.4789"
-        assert st._fmt(0.47891234) == "0.4789"
+        assert st._fmt_p(0.47891234) == "= 0.479"
+        assert st._fmt(0.47891234) == "0.479"
 
 
 class TestNotationDict:
@@ -693,7 +693,7 @@ class TestReportPValues:
         assert st._fmt_p(0.032) == "= 0.032"
 
     def test_fmt_p_scientific_for_tiny(self):
-        assert st._fmt_p(1.2179613642216176e-11) == "= 1.218e-11"  # 4 sig figs, e-notation
+        assert st._fmt_p(1.2179613642216176e-11) == "= 1.22e-11"  # 3 sig figs, e-notation
 
     def test_fmt_p_never_floors(self):
         # a value that the old code would have shown as "< 0.001"
@@ -710,7 +710,7 @@ class TestReportPValues:
     def test_fmt_p_clamp_uses_less_than(self):
         import sys
 
-        assert st._fmt_p(sys.float_info.min) == "< 2.225e-308"
+        assert st._fmt_p(sys.float_info.min) == "< 2.23e-308"
 
     def test_make_record_clamps_zero_pvalues(self):
         import sys
@@ -741,7 +741,7 @@ class TestReportPValues:
         add_comparisons(df, "g", "v", [("A", "B")], categories=["A", "B"], pvalues=[0.0])
         rec = st._REPORTS[0]
         assert rec["comparisons"]["pairs"][0]["pvalue"] == sys.float_info.min
-        assert "< 2.225e-308" in st._render_report(rec)
+        assert "< 2.23e-308" in st._render_report(rec)
 
 
 # ── add_comparisons omnibus integration ──────────────────────────────────────────

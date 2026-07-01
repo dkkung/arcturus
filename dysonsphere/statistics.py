@@ -481,10 +481,9 @@ def _make_record(
 
 
 # ── Text report (rendered from a record) ───────────────────────────────────
-# The report/metadata uses a fixed, deliberately thorough 4 significant figures —
-# independent of the on-plot label's theme sigFigs, so a cosmetic on-plot choice never
-# coarsens the record.
-_REPORT_SIGFIGS = 4
+# The report/metadata uses a fixed 3 significant figures — independent of the on-plot
+# label's theme sigFigs, so a cosmetic on-plot choice never coarsens the record.
+_REPORT_SIGFIGS = 3
 
 
 def _fmt(x: float | None) -> str:
@@ -492,10 +491,10 @@ def _fmt(x: float | None) -> str:
 
 
 def _fmt_p(p: float) -> str:
-    """Format a report p-value at 4 significant figures — never floored.
+    """Format a report p-value at 3 significant figures — never floored.
 
-    ``%g`` keeps ordinary p-values as readable decimals (``= 0.0321``) and switches
-    tiny ones to e-notation (``= 1.223e-11``) automatically.  This is the *record*
+    ``%g`` keeps ordinary p-values as readable decimals (``= 0.032``) and switches
+    tiny ones to e-notation (``= 1.22e-11``) automatically.  This is the *record*
     format and is independent of the on-plot label style (``notation``/``sigFigs``).
     The one clamp-value (see ``_clamp_p``) is rendered with ``<`` because the true
     value is genuinely below float precision.

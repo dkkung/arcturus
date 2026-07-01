@@ -128,7 +128,7 @@ ds.theme(   # custom configuration
 | `secondaryFontSize` | `fontSize - 1` | An auxiliary smaller font size, auto-derived from `fontSize` (never below `smallestFontSize`, unless you set `fontSize` below it) unless set explicitly. Available for your own annotations; not consumed by the built-in defaults |
 | `smallestFontSize` | `5` | A fixed small font size (points) that also floors `secondaryFontSize`. Accepts an `int` or a `bool`: `True` minimizes the plot by setting `fontSize` to it; an `int` overrides the value; `False` / omitted leaves it simply retrievable. To go below it, pass a smaller `fontSize` directly |
 | `fontWeight` | `400` | Font weight: 300 = light, 400 = normal, 700 = bold |
-| `sigFigs` | `3` | Significant figures for on-plot statistical labels (`add_comparisons` p-values, `add_correlation` readout). Consistent precision across magnitudes; per-call `sigFigs=` overrides it. (The saved report/metadata uses its own fixed 4 sig figs.) |
+| `sigFigs` | `3` | Significant figures for on-plot statistical labels (`add_comparisons` p-values, `add_correlation` readout). Consistent precision across magnitudes; per-call `sigFigs=` overrides it. (The saved report/metadata uses its own fixed 3 sig figs.) |
 | `grid` | `False` | Show axis grid lines |
 | `gridColor` | `colors["greys"][0]` | Grid line color |
 | `legend` | `True` | Show legends |
@@ -617,7 +617,7 @@ chart + ds.add_comparisons(
 chart + ds.add_comparisons(df, "group", "value", test="kruskal", categories=CATEGORIES, report=True)
 ```
 
-The supported post-hocs are Tukey HSD and Dunnett (via `scipy`) plus **Dunn, Nemenyi, and Games-Howell**, which `dysonsphere` computes *in-house* (validated against `scikit-posthocs` and `pingouin`). Every `add_comparisons()` call also generates a descriptive + effect-size report that is appended to the metadata of files written by `ds.save()` (see `report`/`save`). For an omnibus test the report lists **all** pairwise post-hoc comparisons (the full table), not just the pairs you draw brackets for. Report p-values carry the **real computed value at a fixed 4 significant figures** (e.g. `P = 1.223e-11`) — never the floored `P < 0.001` used for on-plot labels, and independent of the on-plot `sigFigs` — so the metadata stays precise regardless of how you style the plot.
+The supported post-hocs are Tukey HSD and Dunnett (via `scipy`) plus **Dunn, Nemenyi, and Games-Howell**, which `dysonsphere` computes *in-house* (validated against `scikit-posthocs` and `pingouin`). Every `add_comparisons()` call also generates a descriptive + effect-size report that is appended to the metadata of files written by `ds.save()` (see `report`/`save`). For an omnibus test the report lists **all** pairwise post-hoc comparisons (the full table), not just the pairs you draw brackets for. Report p-values carry the **real computed value at a fixed 3 significant figures** (e.g. `P = 1.22e-11`) — never the floored `P < 0.001` used for on-plot labels, and independent of the on-plot `sigFigs` — so the metadata stays precise regardless of how you style the plot.
 
 ![p-value omnibus example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/omnibus_example_light.png)
 
