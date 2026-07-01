@@ -88,9 +88,9 @@ fontSize = alt.theme.options.get("fontSize", 7)
 left = (left_base + ds.add_comparisons(**pvalue_kwargs, labelStyle="p", bracketStyle="line")).properties(
     title=alt.TitleParams(['labelStyle="p"', 'bracketStyle="line"'], fontSize=fontSize, **title_params)
 )
-scientific = (
-    scientific_base + ds.add_comparisons(**pvalue_kwargs, labelStyle="p", notation="scientific", decimals=2)
-).properties(title=alt.TitleParams(['labelStyle="p"', 'notation="scientific"'], fontSize=fontSize, **title_params))
+scientific = (scientific_base + ds.add_comparisons(**pvalue_kwargs, labelStyle="p", notation="scientific")).properties(
+    title=alt.TitleParams(['labelStyle="p"', 'notation="scientific"'], fontSize=fontSize, **title_params)
+)
 right = (right_base + ds.add_comparisons(**pvalue_kwargs, labelStyle="asterisks", bracketStyle="bracket")).properties(
     title=alt.TitleParams(
         ['labelStyle="asterisks"', 'bracketStyle="bracket"'],

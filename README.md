@@ -128,6 +128,7 @@ ds.theme(   # custom configuration
 | `secondaryFontSize` | `fontSize - 1` | An auxiliary smaller font size, auto-derived from `fontSize` (never below `smallestFontSize`, unless you set `fontSize` below it) unless set explicitly. Available for your own annotations; not consumed by the built-in defaults |
 | `smallestFontSize` | `5` | A fixed small font size (points) that also floors `secondaryFontSize`. Accepts an `int` or a `bool`: `True` minimizes the plot by setting `fontSize` to it; an `int` overrides the value; `False` / omitted leaves it simply retrievable. To go below it, pass a smaller `fontSize` directly |
 | `fontWeight` | `400` | Font weight: 300 = light, 400 = normal, 700 = bold |
+| `sigFigs` | `3` | Significant figures for on-plot statistical labels (`add_comparisons` p-values, `add_correlation` readout). Consistent precision across magnitudes; per-call `sigFigs=` overrides it. (The saved report/metadata uses its own fixed 4 sig figs.) |
 | `grid` | `False` | Show axis grid lines |
 | `gridColor` | `colors["greys"][0]` | Grid line color |
 | `legend` | `True` | Show legends |
@@ -616,7 +617,7 @@ chart + ds.add_comparisons(
 chart + ds.add_comparisons(df, "group", "value", test="kruskal", categories=CATEGORIES, report=True)
 ```
 
-The supported post-hocs are Tukey HSD and Dunnett (via `scipy`) plus **Dunn, Nemenyi, and Games-Howell**, which `dysonsphere` computes *in-house* (validated against `scikit-posthocs` and `pingouin`). Every `add_comparisons()` call also generates a descriptive + effect-size report that is appended to the metadata of files written by `ds.save()` (see `report`/`save`). For an omnibus test the report lists **all** pairwise post-hoc comparisons (the full table), not just the pairs you draw brackets for. Report p-values carry the **real computed value at 3 significant figures** (e.g. `P = 1.22e-11`) — never the floored `P < 0.001` used for on-plot labels — so the metadata stays precise down to the float limit, independent of the label's `notation`/`decimals`.
+The supported post-hocs are Tukey HSD and Dunnett (via `scipy`) plus **Dunn, Nemenyi, and Games-Howell**, which `dysonsphere` computes *in-house* (validated against `scikit-posthocs` and `pingouin`). Every `add_comparisons()` call also generates a descriptive + effect-size report that is appended to the metadata of files written by `ds.save()` (see `report`/`save`). For an omnibus test the report lists **all** pairwise post-hoc comparisons (the full table), not just the pairs you draw brackets for. Report p-values carry the **real computed value at a fixed 4 significant figures** (e.g. `P = 1.223e-11`) — never the floored `P < 0.001` used for on-plot labels, and independent of the on-plot `sigFigs` — so the metadata stays precise regardless of how you style the plot.
 
 ![p-value omnibus example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/omnibus_example_light.png)
 
@@ -641,7 +642,7 @@ The supported post-hocs are Tukey HSD and Dunnett (via `scipy`) plus **Dunn, Nem
 | `categories` | inferred | Ordered list of all x-axis categories |
 | `chartWidth` | `theme(chartWidth)` | Chart width for computing text x position; auto-read from the active theme, rarely needs to be set explicitly |
 | `fontSize` | `theme(fontSize)` | Font size of the p-value / corner labels; defaults to the theme's `fontSize` |
-| `decimals` | `3` | Decimal places in the p-value label when `labelStyle="p"`. Also sets the display threshold: values below `10^(-decimals)` show as `P < 0.001`. For `notation="scientific"` or `"e"`, controls mantissa decimal places. Ignored for `notation="power"` |
+| `sigFigs` | `theme(sigFigs)` | Significant figures for the p-value label (and mantissa in scientific/`e`). Gives consistent precision across magnitudes — e.g. `sigFigs=2` renders both `P = 4.3×10⁻¹⁴` and `P = 0.68`. Trailing zeros stripped. `None` reads the theme (default 3). Plain notation floors at a fixed `P < 0.001` |
 | `notation` | `None` | Number format for `labelStyle="p"`. `None` uses `P = 0.012` / `P < 0.001` style. `"scientific"` → `P = 1.23×10⁻⁵`. `"e"` → `P = 1.23e-05`. `"power"` → `P ≈ 10⁻⁵` (rounds to nearest power of 10 — values within the same order of magnitude get the same label, so best for widely spread p-values). `"si"` raises `ValueError`. Or a `dict` for per-pair notation, e.g. `{("A","B"): "scientific", "test": "power"}` — tuple keys are pairs (either order; unlisted → plain), and the special `"test"` key sets the omnibus label's notation |
 | `testLabelPosition` | `"auto"` | Corner preset for the single **test label**, whose content adapts: the omnibus **result** (`ANOVA P = 0.003`) for omnibus tests, or the pairwise **test name** (`Mann-Whitney U`) for pairwise tests. `"auto"` shows it at `"topLeft"` for omnibus and hides it for pairwise (opt-in); a preset draws it there; `None` hides it (result still computed for the report/metadata) |
 | `testLabel` | `None` | Override string for the test label |
@@ -711,7 +712,7 @@ The readout is composed from independent parts — by default it shows just the 
 | `verbose` | `False` | Shortcut: `True` = `coefficient="both", includePvalue=True, includeEquation=True` (overrides those three) |
 | `offsetX`, `offsetY` | `0` | Pixel nudges for the readout |
 | `fontSize` | `theme(fontSize)` | Font size of the readout; defaults to the theme's `fontSize` |
-| `decimals`, `notation` | `3`, `None` | Control the p-value format in the readout (as in `add_comparisons`) |
+| `sigFigs`, `notation` | `theme(sigFigs)`, `None` | Significant figures / number format for the readout — coefficient, r², p-value, and fit equation (as in `add_comparisons`). `sigFigs=None` reads the theme |
 | `color`, `strokeWidth`, `strokeDash`, `opacity` | `None` (inherit) | Curated style overrides for the fit line (the same four knobs as `add_rule`). Each defaults to `None`, so the line inherits the theme's `mark_line` config; set one to override just that property |
 | `lineStyle` | `None` | A dict of raw `mark_line` properties merged in last, so any Vega-Lite line property is reachable. Keys here **override** the curated `color`/`strokeWidth`/etc. above |
 | `report` | `False` | `True` prints the report (coefficient, r², P, fit, n) to stdout; queued for `ds.save()` metadata regardless |
