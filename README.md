@@ -2,7 +2,7 @@
 
 An Altair configuration wrapper with perceptually uniform palettes and chart utilities for publication-ready figures.
 
-![thumbnail](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/thumbnail_light.png)
+![thumbnail](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/thumbnail.png)
 
 ## Installation
 
@@ -485,7 +485,7 @@ alt.Chart(df).mark_circle().encode(
 | `outCol` | `"jitter_x"` | Output column name |
 | `seed` | `20220701` | Random seed |
 
-![transforms example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/transforms_example_light.png)
+![transforms example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/transforms_example.png)
 
 ### Custom marks
 
@@ -547,7 +547,7 @@ ds.save(alt.hconcat(left, right), "comparison")
 | `yTitle` | `yCol` | Y-axis title; `None` suppresses it |
 | `xTitle` | `xCol` | X-axis title; `None` suppresses it |
 
-![marks example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/marks_example_light.png)
+![marks example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/marks_example.png)
 
 ### Statistical annotations
 
@@ -619,7 +619,7 @@ ds.add_comparisons(
 
 For `notation`, a special `"test"` key sets the omnibus label's format (e.g. `notation={"test": "power"}`).
 
-![p-value example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/pairwise_example_light.png)
+![p-value example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/pairwise_example.png)
 
 #### Omnibus tests
 
@@ -643,7 +643,7 @@ chart + ds.add_comparisons(df, "group", "value", test="kruskal", categories=CATE
 
 The supported post-hocs are Tukey HSD and Dunnett (via `scipy`) plus **Dunn, Nemenyi, and Games-Howell**, which `dysonsphere` computes *in-house* (validated against `scikit-posthocs` and `pingouin`). Every `add_comparisons()` call also generates a descriptive + effect-size report that is appended to the metadata of files written by `ds.save()` (see `report`/`save`). For an omnibus test the report lists **all** pairwise post-hoc comparisons (the full table), not just the pairs you draw brackets for. Report p-values carry the **real computed value at a fixed 3 significant figures** (e.g. `P = 1.22e-11`) — never the floored `P < 0.001` used for on-plot labels, and independent of the on-plot `sigFigs` — so the metadata stays precise regardless of how you style the plot.
 
-![p-value omnibus example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/omnibus_example_light.png)
+![p-value omnibus example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/omnibus_example.png)
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -710,7 +710,7 @@ scatter + ds.add_correlation(
 )
 ```
 
-![correlation example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/correlation_example_light.png)
+![correlation example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/correlation_example.png)
 
 The three `method`s report different coefficients; only Pearson has a straight-line model, so `line=` is a no-op for the rank methods:
 
@@ -809,7 +809,7 @@ ds.add_multilabel(
 
 `categoryLabelHeight` is auto-computed as `ceil(fontSize × 0.6 × max_len × |sin(angle)| + fontSize × |cos(angle)|)` — the rotated bounding box of the longest label. Pass an explicit value to adjust the space between the category label text and the adjacent data rows.
 
-![Multilabel example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/multilabel_example_light.png)
+![Multilabel example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/multilabel_example.png)
 
 #### Spans
 
@@ -836,7 +836,7 @@ span=[{None: ["A", "B", "C"]}, {None: ["D", "E", "F"]}]
 
 The span section is always placed below all annotation rows. When `categoryLabel=True` and `categoryLabelPosition="bottom"`, the category label row is deferred to below the spans so the visual order is always: rows → spans → category labels.
 
-![Multilabel span example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/multilabel_span_example_light.png)
+![Multilabel span example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/multilabel_span_example.png)
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -919,7 +919,7 @@ shade = ds.add_shade(
 )
 ```
 
-![shade example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/shade_example_light.png)
+![shade example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/shade_example.png)
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -964,7 +964,7 @@ chart = base + ds.add_rule(10, axis="x", label="t₀", labelPosition="left")
 
 `labelAlign` controls where **along** the line the label is anchored; `labelPosition` controls which **side** of the line it sits on.
 
-![reference line example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/reference_line_example_light.png)
+![reference line example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/reference_line_example.png)
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -998,7 +998,7 @@ chart = base + ds.add_text("Threshold = 5.0", position="bottomRight", offsetX=-4
 
 The `x` and `y` parameters accept three forms: a `float`/`int` for quantitative data coordinates (shares the main chart's scale automatically), a `str` for nominal band centers, or `alt.value(n)` to pin to a fixed pixel position independent of the data. The `position` preset sets `x`, `y`, `align`, and `baseline` automatically from `chartWidth` / `chartHeight` in the active theme; explicit arguments override any preset value.
 
-![text annotation example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/text_example_light.png)
+![text annotation example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/text_example.png)
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -1024,7 +1024,7 @@ The `x` and `y` parameters accept three forms: a `float`/`int` for quantitative 
 
 > **Note:** Always use `ds.save()` rather than `chart.save()`. `ds.save()` runs an SVG post-processing step that corrects the sub-pixel rounding Vega applies to tick transforms, ensuring consistent minor tick spacing at high DPI.
 
-![Nonlinear scale example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/nonlinear_example_light.png)
+![Nonlinear scale example](https://raw.githubusercontent.com/dkkung/dysonsphere/main/docs/nonlinear_example.png)
 
 #### Axis label reformatting
 

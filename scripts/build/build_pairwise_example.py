@@ -1,5 +1,5 @@
 """
-Generates docs/pairwise_example_light.png — the README preview for add_comparisons.
+Generates docs/pairwise_example.png — the README preview for add_comparisons.
 
 Shows labelStyle="p", notation="scientific", and labelStyle="asterisks" on the
 same three-group comparison, plus a reverse-bracket + test-name-label demo on the right.
@@ -128,7 +128,7 @@ third = (
 
 chart = alt.hconcat(left, scientific, right, third)
 
-out_png = ROOT / "docs" / "pairwise_example_light.png"
+out_png = ROOT / "docs" / "pairwise_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)

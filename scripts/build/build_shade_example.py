@@ -1,5 +1,5 @@
 """
-Generates docs/shade_example_light.png — the README preview for add_shade().
+Generates docs/shade_example.png — the README preview for add_shade().
 
 Three panels:
   left   — band mode with default arguments (boxplot)
@@ -138,7 +138,7 @@ right = (shade_right + scatter).properties(
 
 chart = alt.hconcat(left, mid, right)
 
-out_png = ROOT / "docs" / "shade_example_light.png"
+out_png = ROOT / "docs" / "shade_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)

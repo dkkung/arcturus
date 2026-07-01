@@ -1,5 +1,5 @@
 """
-Generates docs/transforms_example_light.png — the README preview for add_beeswarm and add_jitter.
+Generates docs/transforms_example.png — the README preview for add_beeswarm and add_jitter.
 
 Two panels showing the same data with different x-offset methods:
   left  - add_beeswarm() (collision-avoiding, deterministic)
@@ -73,7 +73,7 @@ right = (
 
 chart = alt.hconcat(left, right)
 
-out_png = ROOT / "docs" / "transforms_example_light.png"
+out_png = ROOT / "docs" / "transforms_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)

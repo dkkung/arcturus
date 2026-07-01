@@ -1,5 +1,5 @@
 """
-Generates docs/multilabel_span_example_light.png — the README preview for add_multilabel span.
+Generates docs/multilabel_span_example.png — the README preview for add_multilabel span.
 
 Shows a boxplot with beeswarm overlay and a two-span multilabel annotation
 demonstrating the span= parameter.
@@ -106,7 +106,7 @@ plot = ds.add_multilabel(
     )
 )
 
-out_png = ROOT / "docs" / "multilabel_span_example_light.png"
+out_png = ROOT / "docs" / "multilabel_span_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 plot.save(tmp_path)

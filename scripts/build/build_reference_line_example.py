@@ -1,5 +1,5 @@
 """
-Generates docs/reference_line_example_light.png — the README preview for add_rule().
+Generates docs/reference_line_example.png — the README preview for add_rule().
 
 Left panel:  strip chart with two horizontal reference lines (axis="y").
 Right panel: time series with a vertical reference line (axis="x").
@@ -104,7 +104,7 @@ right = (
 
 chart = alt.hconcat(left, right)
 
-out_png = ROOT / "docs" / "reference_line_example_light.png"
+out_png = ROOT / "docs" / "reference_line_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)

@@ -1,5 +1,5 @@
 """
-Generates docs/marks_example_light.png — the README preview for mark_strip and mark_violin.
+Generates docs/marks_example.png — the README preview for mark_strip and mark_violin.
 
 Two panels showing the same data with different mark types:
   left  - mark_strip() (jittered points + median tick + error bars)
@@ -56,7 +56,7 @@ right = ds.mark_violin(df, "group", "value", CATEGORIES, palette=palette, yTitle
 
 chart = alt.hconcat(left, right).resolve_scale(y="shared")
 
-out_png = ROOT / "docs" / "marks_example_light.png"
+out_png = ROOT / "docs" / "marks_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)

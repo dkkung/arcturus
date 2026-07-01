@@ -1,5 +1,5 @@
 """
-Generates docs/omnibus_example_light.png — the README preview for the
+Generates docs/omnibus_example.png — the README preview for the
 omnibus mode of add_comparisons.
 
 Two panels, each a boxplot with an omnibus test reported in the corner (via the
@@ -86,7 +86,7 @@ right = (boxplot() + ds.add_comparisons(**common, test="kruskal", labelStyle="as
 
 chart = alt.hconcat(left, right)
 
-out_png = ROOT / "docs" / "omnibus_example_light.png"
+out_png = ROOT / "docs" / "omnibus_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)

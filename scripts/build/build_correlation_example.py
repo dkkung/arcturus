@@ -1,5 +1,5 @@
 """
-Generates docs/correlation_example_light.png — the README preview for add_correlation.
+Generates docs/correlation_example.png — the README preview for add_correlation.
 
 Three panels:
   left   — method="pearson" default: r + the theme-inherited OLS fit line
@@ -68,7 +68,7 @@ right = (
 
 chart = alt.hconcat(left, middle, right)
 
-out_png = ROOT / "docs" / "correlation_example_light.png"
+out_png = ROOT / "docs" / "correlation_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)

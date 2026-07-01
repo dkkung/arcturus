@@ -1,5 +1,5 @@
 """
-Generates docs/multilabel_example_light.png — the README preview for add_multilabel.
+Generates docs/multilabel_example.png — the README preview for add_multilabel.
 
 Shows all three grid label styles (plusminus, symbol, text) side by side,
 each attached below a strip chart via add_multilabel().
@@ -81,7 +81,7 @@ txt = ds.add_multilabel(
 )
 combined = alt.hconcat(pm, dot, txt)
 
-out_png = ROOT / "docs" / "multilabel_example_light.png"
+out_png = ROOT / "docs" / "multilabel_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 combined.save(tmp_path)

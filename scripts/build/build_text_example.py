@@ -1,5 +1,5 @@
 """
-Generates docs/text_example_light.png — the README preview for add_text().
+Generates docs/text_example.png — the README preview for add_text().
 
 Usage (from project root):
     uv run python scripts/build/build_text_example.py
@@ -62,7 +62,7 @@ multi = {
 }
 annotated = ds.add_multilabel(chart, categories=GROUPS, groups=multi, style="plusminus", categoryLabel=True)
 
-out_png = ROOT / "docs" / "text_example_light.png"
+out_png = ROOT / "docs" / "text_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 annotated.save(tmp_path)

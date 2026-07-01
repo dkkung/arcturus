@@ -1,5 +1,5 @@
 """
-Generates assets/thumbnail_light.png — the README preview image.
+Generates assets/thumbnail.png — the README preview image.
 
 Shows the blues2 palette across all gallery chart types (colorspace and
 ΔE sparkline omitted; legends hidden; group labels shortened to A/B/C/…).
@@ -206,7 +206,7 @@ def build_thumbnail():
         spacing=6,
     ).resolve_scale(**_rs)
 
-    out = ROOT / "docs" / "thumbnail_light.png"
+    out = ROOT / "docs" / "thumbnail.png"
     chart.save(str(out), ppi=1200)
     print(f"saved {out}")
 

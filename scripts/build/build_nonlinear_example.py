@@ -1,5 +1,5 @@
 """
-Generates docs/nonlinear_example_light.png — README preview for add_log_ticks / add_pow_ticks.
+Generates docs/nonlinear_example.png — README preview for add_log_ticks / add_pow_ticks.
 
 Two panels:
   left  — log10 y-axis with add_log_ticks(base=10)
@@ -135,7 +135,7 @@ right = pow_chart.properties(
 
 chart = alt.hconcat(left, right)
 
-out_png = ROOT / "docs" / "nonlinear_example_light.png"
+out_png = ROOT / "docs" / "nonlinear_example.png"
 with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as tmp:
     tmp_path = tmp.name
 chart.save(tmp_path)
