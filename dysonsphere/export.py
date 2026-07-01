@@ -153,8 +153,8 @@ def save(
         )
         _effective_desc: str | None = f"{description}\n{_meta}" if description is not None else _meta
         _generated = {
-            "script": _script,
             "user": _user,
+            "script": _script,
             "timestamp": _now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "python": _py_ver,
             "altair": alt.__version__,
