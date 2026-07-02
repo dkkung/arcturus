@@ -414,10 +414,11 @@ ds.read("myplot.png")                     # prints the report table, returns the
 ds.read("myplot.png", save="reports")     # + writes reports/dysonsphere_report_<ts>.txt
 ds.read("myplot.png", what="statistics")  # the structured records (exact floats)
 ds.read("myplot.json", what="metadata")   # the whole {provenance, statistics, theme, report} dict
-ds.read("myplot.json", what="data")       # the original DataFrame, rebuilt from the spec (JSON only)
+ds.read("myplot.json", what="data")       # the original data, rebuilt from the spec (JSON only)
+ds.read("myplot.json", what="data", output="pandas")   # or "duckdb" / "records"
 ```
 
-`what="report"` (default) even **re-renders the table from the records** if the prose wasn't embedded (`embedReport=False`), so it works on any dysonsphere-saved file. `what="data"` returns the **whole** DataFrame Altair inlined into the JSON — every column you passed to `alt.Chart(df)`, including ones the chart never plotted (so mind what you hand it), rebuilt as Polars with dtypes re-inferred from JSON.
+`what="report"` (default) even **re-renders the table from the records** if the prose wasn't embedded (`embedReport=False`), so it works on any dysonsphere-saved file. `what="data"` returns the **whole** frame Altair inlined into the JSON — every column you passed to `alt.Chart(df)`, including ones the chart never plotted (so mind what you hand it), dtypes re-inferred from JSON. `output` picks the form: `"polars"` (default), `"pandas"`, `"duckdb"` (a queryable relation), or `"records"` (raw `list[dict]`, no dataframe library needed). `pandas`/`duckdb` are imported only if you ask for them — they're not dependencies.
 
 `ds.load()` rebuilds the chart from the **Vega-Lite JSON** (the `.json` spec):
 

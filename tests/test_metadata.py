@@ -337,6 +337,41 @@ class TestReadLoad:
         with pytest.raises(ValueError, match="needs the Vega-Lite JSON"):
             ds.read(str(saved / "t.svg"), what="data")
 
+    def _data_json(self, tmp_path):
+        import dysonsphere as ds
+
+        orig = pl.DataFrame({"g": ["A", "A", "B", "B"], "v": [1.0, 2.0, 3.0, 4.0]})
+        ds.save(alt.Chart(orig).mark_point().encode(x="g:N", y="v:Q"), str(tmp_path / "d"), format="json")
+        return str(tmp_path / "d.json")
+
+    def test_read_data_output_pandas(self, tmp_path):
+        import pandas as pd
+
+        import dysonsphere as ds
+
+        got = ds.read(self._data_json(tmp_path), what="data", output="pandas")
+        assert isinstance(got, pd.DataFrame) and list(got.columns) == ["g", "v"] and len(got) == 4
+
+    def test_read_data_output_duckdb(self, tmp_path):
+        import duckdb
+
+        import dysonsphere as ds
+
+        got = ds.read(self._data_json(tmp_path), what="data", output="duckdb")
+        assert isinstance(got, duckdb.DuckDBPyRelation) and len(got.fetchall()) == 4
+
+    def test_read_data_output_records(self, tmp_path):
+        import dysonsphere as ds
+
+        got = ds.read(self._data_json(tmp_path), what="data", output="records")
+        assert isinstance(got, list) and got[0] == {"g": "A", "v": 1.0}  # raw list[dict], no deps
+
+    def test_read_data_invalid_output(self, tmp_path):
+        import dysonsphere as ds
+
+        with pytest.raises(ValueError, match="output must be one of"):
+            ds.read(self._data_json(tmp_path), what="data", output="dask")
+
     def test_read_report_save_writes_txt(self, saved, tmp_path):
         import dysonsphere as ds
 

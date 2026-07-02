@@ -25,10 +25,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "duckdb>=1.0.0",
+    "pandas>=2.0.0",
     "pytest>=9.0.0",
     "ruff>=0.15.17",
     "ty>=0.0.0",
-"vl-convert-python>=1.7.0",
+    "vl-convert-python>=1.7.0",
 ]
 
 [project.urls]

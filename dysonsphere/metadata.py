@@ -11,12 +11,9 @@ import sys
 import zlib
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import altair as alt
-
-if TYPE_CHECKING:
-    import polars as pl
 
 _REPORT_PREFIX = "dysonsphere-report-"
 
@@ -279,16 +276,22 @@ def _read_dysonsphere_block(path: str) -> dict:
     return block
 
 
-def _read_data(path: str) -> "pl.DataFrame":
-    """Rebuild the primary DataFrame from a Vega-Lite JSON (the ``.json`` spec).
+_DATA_OUTPUTS = ("polars", "pandas", "duckdb", "records")
+
+
+def _read_data(path: str, output: str) -> Any:
+    """Rebuild the primary data from a Vega-Lite JSON (the ``.json`` spec) in the requested
+    ``output`` form.
 
     Altair inlines the whole ``alt.Chart(df)`` frame — **every column, even unused ones** —
-    as a named dataset (or inline ``data.values``).  We return the *largest* embedded
-    row-list as a Polars DataFrame; smaller ones are typically annotation-layer data.  Dtypes
-    are re-inferred from JSON, so a category/datetime column comes back as string/number.
+    as a named dataset (or inline ``data.values``).  We take the *largest* embedded row-list
+    (smaller ones are annotation-layer data) and return it as:
+    ``"polars"`` (default) → ``pl.DataFrame``; ``"pandas"`` → ``pd.DataFrame``; ``"duckdb"`` →
+    a ``DuckDBPyRelation``; ``"records"`` → the raw ``list[dict]`` (zero-dependency).  Dtypes
+    are re-inferred from JSON.  pandas/duckdb are imported lazily (clear error if missing).
     """
-    import polars as pl
-
+    if output not in _DATA_OUTPUTS:
+        raise ValueError(f"output must be one of {_DATA_OUTPUTS}, got {output!r}")
     p = Path(path)
     if p.suffix.lower() != ".json":
         raise ValueError(f"what='data' needs the Vega-Lite JSON (the .json spec), got {p.suffix!r}")
@@ -310,10 +313,29 @@ def _read_data(path: str) -> "pl.DataFrame":
     rows = max(candidates, key=len, default=[])
     if not rows:
         raise ValueError(f"no embedded data found in {path!r} (was the DataFrame inlined at save time?)")
-    return pl.DataFrame(rows)
+
+    if output == "records":
+        return rows  # raw list[dict] — no dataframe library needed
+    if output == "pandas":
+        try:
+            import pandas as pd
+        except ImportError as e:
+            raise ImportError("read(output='pandas') requires pandas — `pip install pandas`.") from e
+        return pd.DataFrame(rows)
+
+    import polars as pl
+
+    df = pl.DataFrame(rows)
+    if output == "polars":
+        return df
+    try:  # duckdb
+        import duckdb
+    except ImportError as e:
+        raise ImportError("read(output='duckdb') requires duckdb — `pip install duckdb`.") from e
+    return duckdb.from_arrow(df.to_arrow())  # a queryable DuckDBPyRelation (pyarrow via polars)
 
 
-def read(path: str, *, what: str = "report", save: bool | str = False) -> Any:  # str|list|dict|pl.DataFrame per `what`
+def read(path: str, *, what: str = "report", save: bool | str = False, output: str = "polars") -> Any:
     """Read back the metadata (or data) embedded by :func:`save` from a PNG, SVG, or JSON.
 
     Parameters
@@ -331,15 +353,20 @@ def read(path: str, *, what: str = "report", save: bool | str = False) -> Any:  
         - ``'statistics'`` — the structured **records** (list of dicts, exact floats).
         - ``'metadata'`` — the whole ``{provenance, statistics, theme, report}`` dict, where
           ``report`` is the ``{section: text}`` container.
-        - ``'data'`` — the **original DataFrame** (Polars), rebuilt from the data Altair
-          inlined into the spec. **JSON only** (PNG/SVG don't carry the data). Returns the
-          whole frame Altair embedded, including columns the chart never plotted.
+        - ``'data'`` — the **original data** Altair inlined into the spec (the whole frame,
+          including columns the chart never plotted). **JSON only** (PNG/SVG don't carry the
+          data). The form is chosen by ``output``.
     save:
         Only for ``what='report'``: ``True`` writes the report to a ``.txt`` in the cwd;
         a string writes to that directory.
+    output:
+        Only for ``what='data'`` — the form to return the data in: ``'polars'`` (default) →
+        ``pl.DataFrame``; ``'pandas'`` → ``pd.DataFrame``; ``'duckdb'`` → a ``DuckDBPyRelation``;
+        ``'records'`` → the raw ``list[dict]`` (no dataframe library needed). ``pandas`` and
+        ``duckdb`` are imported lazily and are not package dependencies.
     """
     if what == "data":
-        return _read_data(path)
+        return _read_data(path, output)
     block = _read_dysonsphere_block(path)
     if what == "metadata":
         return block
