@@ -143,6 +143,32 @@ class TestSave:
         assert (tmp_path / "out.png").exists()
         assert not (tmp_path / "out.svg").exists()
 
+    @pytest.fixture
+    def big_chart(self):
+        n = 6000
+        df = pl.DataFrame({"g": ["A", "B"] * (n // 2), "v": [float(i) for i in range(n)]})
+        return alt.Chart(df).mark_point().encode(x="g:N", y="v:Q")
+
+    def test_max_rows_blocks_large_data(self, big_chart, tmp_path):
+        # every format hits the cap (rendering inlines the data), with a clear error
+        for fmt in ("json", "png", "svg"):
+            with pytest.raises(ValueError, match="maxRows"):
+                save(big_chart, str(tmp_path / "big"), format=fmt, background=["light"])
+
+    def test_max_rows_raised_allows_large_data(self, big_chart, tmp_path):
+        save(big_chart, str(tmp_path / "big"), format="json", maxRows=10000, background=["light"])
+        assert (tmp_path / "big.json").exists()
+
+    def test_override_max_rows_allows_large_data(self, big_chart, tmp_path):
+        save(big_chart, str(tmp_path / "big"), format="json", overrideMaxRows=True, background=["light"])
+        assert (tmp_path / "big.json").exists()
+
+    def test_max_rows_restores_transformer(self, big_chart, tmp_path):
+        before = alt.data_transformers.active
+        with pytest.raises(ValueError):
+            save(big_chart, str(tmp_path / "big"), format="json", background=["light"])  # errors mid-save
+        assert alt.data_transformers.active == before  # transformer restored even on error
+
     def test_layer_chart(self, tmp_path):
         from typing import cast
 

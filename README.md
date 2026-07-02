@@ -385,8 +385,12 @@ ds.save(chart, "myplot", background=["light", "dark"])  # myplot_light.* + myplo
 ds.save(chart, "myplot", ppi=600)                     # lower PPI for faster PNG exports
 ds.save(chart, "myplot", description="Figure 1")      # your own description, in SVG <desc>, PNG iTXt, and the JSON spec
 ds.save(chart, "myplot", saveMetadata=False)          # suppress the structured metadata block
+ds.save(chart, "myplot", maxRows=20000)               # allow bigger data (default cap 5000)
+ds.save(chart, "myplot", overrideMaxRows=True)        # remove the row cap entirely
 ds.theme(saveFormat=["svg", "png"], saveBackground="dark")  # change the save defaults globally
 ```
+
+Because every format renders through Altair's `chart.to_dict()`, which **inlines the data** (and the JSON embeds it for `ds.read(what="data")`), `ds.save()` blocks data over `maxRows` (default 5000) with a clear error rather than writing a huge file — raise `maxRows=` or pass `overrideMaxRows=True` to opt in.
 
 #### Metadata
 

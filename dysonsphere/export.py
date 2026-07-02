@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import uuid
+from contextlib import ExitStack
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Union, cast
@@ -47,6 +48,8 @@ def save(
     embedReport: bool = True,
     format: str | list[str] | None = None,
     background: str | list[str] | None = None,
+    maxRows: int = 5000,
+    overrideMaxRows: bool = False,
 ) -> None:
     """
     Save a chart in one or more formats and background variants.
@@ -92,6 +95,14 @@ def save(
         Which background variant(s) to render: ``"light"`` and/or ``"dark"`` (each toggles
         ``darkmode``), as a single string or a list. ``None`` (default) uses the theme
         option ``saveBackground`` (``"light"``). An empty list or unknown value raises.
+    maxRows:
+        Row cap for the data inlined into the output (default ``5000``, matching Altair).
+        Every format renders via ``chart.to_dict()``, which inlines the data, and the JSON
+        embeds it for :func:`read` — so data over this many rows would make the files huge
+        and is **blocked with a clear error**. Raise it to allow larger data.
+    overrideMaxRows:
+        If ``True``, removes the row cap entirely for this save (inlines all rows, however
+        many). The deliberate opt-in for large data.
     saveMetadata:
         If ``True`` (default), embeds a **structured JSON** metadata block —
         ``{"provenance": {...}, "statistics": [...]}`` — in every output format so each
@@ -176,6 +187,12 @@ def save(
     _want_render = "svg" in _formats or "png" in _formats
     original_darkmode = alt.theme.options.get("darkmode", False)
     original_transparent = alt.theme.options.get("transparentBackground", False)
+    # Cap the rows inlined for this save (every format renders via to_dict(), which enforces
+    # it; overrideMaxRows lifts it) — restored on the way out via the ExitStack.  Over the cap,
+    # Altair raises MaxRowsError, which we catch and re-raise with a clearer message.
+    _cap_stack = ExitStack()
+    _row_cap = alt.data_transformers.enable("default", max_rows=None if overrideMaxRows else maxRows)
+    _cap_stack.enter_context(_row_cap)  # ty: ignore[invalid-argument-type]  (Altair PluginEnabler lacks CM stub)
     try:
         if _want_render:
             import vl_convert as vlc
@@ -237,7 +254,15 @@ def save(
                     Path(_path(bg, "png")).write_bytes(png_bytes)
                 if "svg" not in _formats:
                     Path(svg_path).unlink()  # transient — only rendered as the PNG source
+    except alt.MaxRowsError as e:
+        raise ValueError(
+            f"the chart's data has more than maxRows={maxRows} rows. Every output format inlines "
+            f"the data to render it (and the .json embeds it for read(what='data')), so large data "
+            f"is blocked to avoid huge files. Raise maxRows= to allow it, or pass overrideMaxRows=True "
+            f"to remove the cap."
+        ) from e
     finally:
+        _cap_stack.close()
         alt.theme.options["darkmode"] = original_darkmode
         alt.theme.options["transparentBackground"] = original_transparent
 
